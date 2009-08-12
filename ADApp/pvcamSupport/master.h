@@ -3,7 +3,7 @@
 /*****************************************************************************/
 #ifndef _MASTER_H
 #define _MASTER_H
-static const char *_master_h_="$Header: /net/beams-nfs/export/local/cvs/support/areaDetector/ADApp/pvcamSupport/master.h,v 1.1 2009-08-05 15:47:47 hammonds Exp $";
+static const char *_master_h_="$Header: /net/beams-nfs/export/local/cvs/support/areaDetector/ADApp/pvcamSupport/master.h,v 1.2 2009-08-12 19:06:39 rivers Exp $";
 
 #ifndef WIN32
     #error OS Not Supported
@@ -70,7 +70,9 @@ typedef const boolean PV_PTR_DECL boolean_const_ptr;
   #define TRUE   PV_OK        /* TRUE  == 1                                  */
 #endif
 
+#ifndef BIG_ENDIAN
 #define BIG_ENDIAN    FALSE /* TRUE for Motorola byte order, FALSE for Intel */
+#endif
 #define CAM_NAME_LEN     32 /* Max length of a cam name (includes null term) */
 
 /************************ PVCAM-Specific Definitions *************************/
