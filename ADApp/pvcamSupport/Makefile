@@ -11,9 +11,10 @@ INC += pvcam.h pv_icl.h master.h
 
 # Note, the following files were manually copied from the PVCam distribution
 # to this directory after building
-BIN_INSTALLS_WIN32    += ../pv_icl32.dll
-BIN_INSTALLS_WIN32    += ../pvcam32.dll
+BIN_INSTALLS_WIN32    += ../pv_icl32.dll ../pvcam32.dll
+BIN_INSTALLS_cygwin32 += ../pv_icl32.dll ../pvcam32.dll
 LIB_INSTALLS_WIN32    += ../pv_icl32.lib ../pvcam32.lib
+LIB_INSTALLS_cygwin32 += ../pv_icl32.lib ../pvcam32.lib
 
 #=============================
 
