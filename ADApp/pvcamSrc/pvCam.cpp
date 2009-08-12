@@ -510,7 +510,7 @@ void pvCam::pvCamMonitorTask()
 
 asynStatus pvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
-    const char *functionName = "pvCam::writeInt32()";
+    //const char *functionName = "pvCam::writeInt32()";
     int function = pasynUser->reason;
     int adstatus;
     int addr=0;
@@ -603,7 +603,7 @@ asynStatus pvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
 asynStatus pvCam::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
-    const char *functionName = "pvCam::writeFloat64()";
+    //const char *functionName = "pvCam::writeFloat64()";
     int function = pasynUser->reason;
     int status = 0;
     int addr=0;
@@ -835,8 +835,7 @@ void pvCam::queryCurrentSettings (void)
 {
 const char 		*functionName = "pvCam::queryCurrentSettings ()";
 int		 		status 	=	asynSuccess;
-int 			addr 	=	0,
-				iValue;
+int 			addr 	=	0;
 uns16			ui16Value;
 int16			i16Value,
 				parallelSize,
@@ -1158,8 +1157,8 @@ double			dValue;
 
 	//Temperature
     status |= getDoubleParam(PVCamSetTemperature, &dValue);
-	int16Parm = dValue * 100;;
-	printf ("Proposed temperature: %f\n", dValue);
+	int16Parm = (int32)(dValue * 100);
+    printf ("Proposed temperature: %f\n", dValue);
 	if (!pl_set_param (detectorHandle, PARAM_TEMP_SETPOINT, (void *) &int16Parm))
 		outputErrorMessage (functionName, "pl_set_param(PARAM_TEMP_SETPOINT)");
     status |= setDoubleParam(PVCamSetTemperatureRBV, dValue);
@@ -1227,7 +1226,8 @@ double			dValue;
 	int16Parm = (int16) dValue * 1000;
     status |= getIntegerParam(PVCamTriggerMode, &iValue);
     int16Parm2 = iValue;
-    printf ("binX: %d, binY: %d, minx: %d, miny: %d, sizex: %d, sizey: %d, triggerMode: %d, exposureTime: %f\n", binX, binY, minX, minY, sizeX, sizeY, int16Parm2, int16Parm);
+    printf ("binX: %d, binY: %d, minx: %d, miny: %d, sizex: %d, sizey: %d, triggerMode: %d, exposureTime: %d\n", 
+             binX, binY, minX, minY, sizeX, sizeY, (int)int16Parm2, (int)int16Parm);
 	if (!pl_exp_setup_seq (detectorHandle, 1, 1, &roi, int16Parm2, int16Parm, &rawDataSize))
 		outputErrorMessage (functionName, "pl_exp_setup_seq");
     status |= setIntegerParam(PVCamTriggerModeRBV, iValue);
