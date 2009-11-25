@@ -43,132 +43,73 @@ static const char *driverName = "drvPVCam";
 //______________________________________________________________________________________________
 
 /** The polling interval when checking to see if acquisition is complete */
-#define POLL_TIME 						0.01
+#define POLL_TIME                       0.01
 
 #define NUM_PV_CAM_PARAMS (sizeof(PVCamParamString)/sizeof(PVCamParamString[0]))
 
-#define MAX_DETECTORS_SUPPORTED			3
-#define MAX_SPEEDS_SUPPORTED			5
+#define MAX_DETECTORS_SUPPORTED         3
+#define MAX_SPEEDS_SUPPORTED            5
 
 //______________________________________________________________________________________________
 
-/* If we have any private driver parameters they begin with ADFirstDriverParam and should end
-   with ADLastDriverParam, which is used for setting the size of the parameter library table */
-typedef enum {
-    PVCamInitDetector
-        = ADLastStdParam,
-    PVCamSlot1Cam,
-    PVCamSlot2Cam,
-    PVCamSlot3Cam,
-    PVCamDetectorSelected,
-    PVCamChipNameRBV,
-    PVCamNumParallelPixelsRBV,
-    PVCamNumSerialPixelsRBV,
-    PVCamPixelParallelSizeRBV,
-    PVCamPixelSerialSizeRBV,
-    PVCamChipHeightMMRBV,
-    PVCamChipWidthMMRBV,
-    PVCamPixelParallelDistRBV,
-    PVCamPixelSerialDistRBV,
-    PVCamPostMaskRBV,
-    PVCamPreMaskRBV,
-    PVCamPostScanRBV,
-    PVCamPreScanRBV,
-    PVCamNumPortsRBV,
-    PVCamFullWellCapacityRBV,
-    PVCamFrameTransferCapableRBV,
-    PVCamNumSpeedTableEntriesRBV,
-    PVCamSpeedTableIndex,
-    PVCamSpeedTableIndexRBV,
-    PVCamBitDepthRBV,
-    PVCamPixelTimeRBV,
-    PVCamGainIndex,
-    PVCamGainIndexRBV,
-    PVCamMaxGainIndexRBV,
-    PVCamMinShutterOpenDelayRBV,
-    PVCamMaxShutterOpenDelayRBV,
-    PVCamMinShutterCloseDelayRBV,
-    PVCamMaxShutterCloseDelayRBV,
-    PVCamShutterOpenDelay,
-    PVCamShutterOpenDelayRBV,
-    PVCamShutterCloseDelay,
-    PVCamShutterCloseDelayRBV,
-    PVCamMeasuredTemperatureRBV,
-    PVCamMinTemperatureRBV,
-    PVCamMaxTemperatureRBV,
-    PVCamSetTemperature,
-    PVCamSetTemperatureRBV,
-    PVCamDetectorMode,
-    PVCamDetectorModeRBV,
-    PVCamTriggerMode,
-    PVCamTriggerModeRBV,
-    PVCamTriggerEdge,
-    PVCamTriggerEdgeRBV,
-    ADLastDriverParam
-} PVCamParam_t;
-
-//______________________________________________________________________________________________
-
-static asynParamString_t PVCamParamString[] = {
-    {PVCamInitDetector,    			"PVCAM_INITIALIZE_DETECTOR"},
-    {PVCamSlot1Cam,    				"PVCAM_SLOT1"},
-    {PVCamSlot2Cam,    				"PVCAM_SLOT2"},
-    {PVCamSlot3Cam,    				"PVCAM_SLOT3"},
-    {PVCamDetectorSelected,    		"PVCAM_DETECTORSELECTED"},
-    {PVCamChipNameRBV,	    		"PVCAM_CHIPNAME"},
-    {PVCamNumParallelPixelsRBV,		"PVCAM_NUMPARALLELPIXELS"},
-    {PVCamNumSerialPixelsRBV,		"PVCAM_NUMSERIALPIXELS"},
-    {PVCamPixelParallelSizeRBV,		"PVCAM_PIXELPARALLELSIZE"},
-    {PVCamPixelSerialSizeRBV,		"PVCAM_PIXELSERIALSIZE"},
-    {PVCamChipHeightMMRBV,			"PVCAM_CHIPHEIGHT"},
-    {PVCamChipWidthMMRBV,			"PVCAM_CHIPWIDTH"},
-    {PVCamPixelParallelDistRBV,		"PVCAM_PIXELPARALLELDIST"},
-    {PVCamPixelSerialDistRBV,		"PVCAM_PIXELSERIALDIST"},
-    {PVCamPostMaskRBV,				"PVCAM_POSTMASK"},
-    {PVCamPreMaskRBV,				"PVCAM_PREMASK"},
-    {PVCamPostScanRBV,				"PVCAM_POSTSCAN"},
-    {PVCamPreScanRBV,				"PVCAM_PRESCAN"},
-    {PVCamNumPortsRBV,				"PVCAM_NUMPORTS"},
-    {PVCamFullWellCapacityRBV,		"PVCAM_FULLWELLCAPACITY"},
-    {PVCamFrameTransferCapableRBV,	"PVCAM_FRAMETRANSFERCAPABLE"},
-    {PVCamNumSpeedTableEntriesRBV,	"PVCAM_NUMSPEEDTABLEENTRIES"},
-    {PVCamSpeedTableIndex,			"PVCAM_SPEEDTABLEINDEX"},
-    {PVCamSpeedTableIndexRBV,		"PVCAM_SPEEDTABLEINDEX_RBV"},
-    {PVCamBitDepthRBV,				"PVCAM_BITDEPTH"},
-    {PVCamPixelTimeRBV,				"PVCAM_PIXELTIME"},
-    {PVCamGainIndex,				"PVCAM_GAININDEX"},
-    {PVCamGainIndexRBV,				"PVCAM_GAININDEX_RBV"},
-    {PVCamMaxGainIndexRBV,			"PVCAM_MAXGAININDEX"},
-    {PVCamMinShutterOpenDelayRBV,	"PVCAM_MINSHUTTEROPENDELAY"},
-    {PVCamMaxShutterOpenDelayRBV,	"PVCAM_MAXSHUTTEROPENDELAY"},
-    {PVCamMinShutterCloseDelayRBV,	"PVCAM_MINSHUTTERCLOSEDELAY"},
-    {PVCamMaxShutterCloseDelayRBV,	"PVCAM_MAXSHUTTERCLOSEDELAY"},
-    {PVCamShutterOpenDelay,			"PVCAM_SHUTTEROPENDELAY"},
-    {PVCamShutterOpenDelayRBV,		"PVCAM_SHUTTEROPENDELAY_RBV"},
-    {PVCamShutterCloseDelay,		"PVCAM_SHUTTERCLOSEDELAY"},
-    {PVCamShutterCloseDelayRBV,		"PVCAM_SHUTTERCLOSEDELAY_RBV"},
-    {PVCamMeasuredTemperatureRBV,	"PVCAM_MEASUREDTEMPERATURE"},
-    {PVCamMinTemperatureRBV,		"PVCAM_MINTEMPERATURE"},
-    {PVCamMaxTemperatureRBV,		"PVCAM_MAXTEMPERATURE"},
-    {PVCamSetTemperature,			"PVCAM_SETTEMPERATURE"},
-    {PVCamSetTemperatureRBV,		"PVCAM_SETTEMPERATURE_RBV"},
-    {PVCamDetectorMode,				"PVCAM_DETECTORMODE"},
-    {PVCamDetectorModeRBV,			"PVCAM_DETECTORMODE_RBV"},
-    {PVCamTriggerMode,				"PVCAM_TRIGGERMODE"},
-    {PVCamTriggerModeRBV,			"PVCAM_TRIGGERMODE_RBV"},
-    {PVCamTriggerEdge,				"PVCAM_TRIGGEREDGE"},
-    {PVCamTriggerEdgeRBV,			"PVCAM_TRIGGEREDGE_RBV"},
-};
+#define PVCamInitDetectorString             "PVCAM_INITIALIZE_DETECTOR"
+#define PVCamSlot1CamString                 "PVCAM_SLOT1"
+#define PVCamSlot2CamString                 "PVCAM_SLOT2"
+#define PVCamSlot3CamString                 "PVCAM_SLOT3"
+#define PVCamDetectorSelectedString         "PVCAM_DETECTORSELECTED"
+#define PVCamChipNameRBVString              "PVCAM_CHIPNAME"
+#define PVCamNumParallelPixelsRBVString     "PVCAM_NUMPARALLELPIXELS"
+#define PVCamNumSerialPixelsRBVString       "PVCAM_NUMSERIALPIXELS"
+#define PVCamPixelParallelSizeRBVString     "PVCAM_PIXELPARALLELSIZE"
+#define PVCamPixelSerialSizeRBVString       "PVCAM_PIXELSERIALSIZE"
+#define PVCamChipHeightMMRBVString          "PVCAM_CHIPHEIGHT"
+#define PVCamChipWidthMMRBVString           "PVCAM_CHIPWIDTH"
+#define PVCamPixelParallelDistRBVString     "PVCAM_PIXELPARALLELDIST"
+#define PVCamPixelSerialDistRBVString       "PVCAM_PIXELSERIALDIST"
+#define PVCamPostMaskRBVString              "PVCAM_POSTMASK"
+#define PVCamPreMaskRBVString               "PVCAM_PREMASK"
+#define PVCamPostScanRBVString              "PVCAM_POSTSCAN"
+#define PVCamPreScanRBVString               "PVCAM_PRESCAN"
+#define PVCamNumPortsRBVString              "PVCAM_NUMPORTS"
+#define PVCamFullWellCapacityRBVString      "PVCAM_FULLWELLCAPACITY"
+#define PVCamFrameTransferCapableRBVString  "PVCAM_FRAMETRANSFERCAPABLE"
+#define PVCamNumSpeedTableEntriesRBVString  "PVCAM_NUMSPEEDTABLEENTRIES"
+#define PVCamSpeedTableIndexString          "PVCAM_SPEEDTABLEINDEX"
+#define PVCamSpeedTableIndexRBVString       "PVCAM_SPEEDTABLEINDEX_RBV"
+#define PVCamBitDepthRBVString              "PVCAM_BITDEPTH"
+#define PVCamPixelTimeRBVString             "PVCAM_PIXELTIME"
+#define PVCamGainIndexString                "PVCAM_GAININDEX"
+#define PVCamGainIndexRBVString             "PVCAM_GAININDEX_RBV"
+#define PVCamMaxGainIndexRBVString          "PVCAM_MAXGAININDEX"
+#define PVCamMinShutterOpenDelayRBVString   "PVCAM_MINSHUTTEROPENDELAY"
+#define PVCamMaxShutterOpenDelayRBVString   "PVCAM_MAXSHUTTEROPENDELAY"
+#define PVCamMinShutterCloseDelayRBVString  "PVCAM_MINSHUTTERCLOSEDELAY"
+#define PVCamMaxShutterCloseDelayRBVString  "PVCAM_MAXSHUTTERCLOSEDELAY"
+#define PVCamShutterOpenDelayString         "PVCAM_SHUTTEROPENDELAY"
+#define PVCamShutterOpenDelayRBVString      "PVCAM_SHUTTEROPENDELAY_RBV"
+#define PVCamShutterCloseDelayString        "PVCAM_SHUTTERCLOSEDELAY"
+#define PVCamShutterCloseDelayRBVString     "PVCAM_SHUTTERCLOSEDELAY_RBV"
+#define PVCamMeasuredTemperatureRBVString   "PVCAM_MEASUREDTEMPERATURE"
+#define PVCamMinTemperatureRBVString        "PVCAM_MINTEMPERATURE"
+#define PVCamMaxTemperatureRBVString        "PVCAM_MAXTEMPERATURE"
+#define PVCamSetTemperatureString           "PVCAM_SETTEMPERATURE"
+#define PVCamSetTemperatureRBVString        "PVCAM_SETTEMPERATURE_RBV"
+#define PVCamDetectorModeString             "PVCAM_DETECTORMODE"
+#define PVCamDetectorModeRBVString          "PVCAM_DETECTORMODE_RBV"
+#define PVCamTriggerModeString              "PVCAM_TRIGGERMODE"
+#define PVCamTriggerModeRBVString           "PVCAM_TRIGGERMODE_RBV"
+#define PVCamTriggerEdgeString              "PVCAM_TRIGGEREDGE"
+#define PVCamTriggerEdgeRBVString           "PVCAM_TRIGGEREDGE_RBV"
 
 //______________________________________________________________________________________________
 
 class pvCam : public ADDriver
 {
 public:
-int 				imagesRemaining;
-epicsEventId 		startEventId,
-					stopEventId;
-NDArray 			*pRaw;
+int                 imagesRemaining;
+epicsEventId         startEventId,
+                    stopEventId;
+NDArray             *pRaw;
 
     pvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t dataType,
                 int maxBuffers, size_t maxMemory, int priority, int stackSize);
@@ -176,7 +117,6 @@ NDArray 			*pRaw;
     /* These are the methods that we override from ADDriver */
     virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
     virtual asynStatus writeFloat64(asynUser *pasynUser, epicsFloat64 value);
-    virtual asynStatus drvUserCreate(asynUser *pasynUser, const char *drvInfo, const char **pptypeName, size_t *psize);
     void report(FILE *fp, int details);
 
     /* These are the methods that are new to this class */
@@ -190,27 +130,81 @@ NDArray 			*pRaw;
 
     ~pvCam ();
 
-private:
-int16			numDetectorsInstalled,
-				detectorSelected,
-				detectorHandle;
+protected:
+    int PVCamInitDetector;
+    #define FIRST_PVCAM_PARAM PVCamInitDetector
+    int PVCamSlot1Cam;
+    int PVCamSlot2Cam;
+    int PVCamSlot3Cam;
+    int PVCamDetectorSelected;
+    int PVCamChipNameRBV;
+    int PVCamNumParallelPixelsRBV;
+    int PVCamNumSerialPixelsRBV;
+    int PVCamPixelParallelSizeRBV;
+    int PVCamPixelSerialSizeRBV;
+    int PVCamChipHeightMMRBV;
+    int PVCamChipWidthMMRBV;
+    int PVCamPixelParallelDistRBV;
+    int PVCamPixelSerialDistRBV;
+    int PVCamPostMaskRBV;
+    int PVCamPreMaskRBV;
+    int PVCamPostScanRBV;
+    int PVCamPreScanRBV;
+    int PVCamNumPortsRBV;
+    int PVCamFullWellCapacityRBV;
+    int PVCamFrameTransferCapableRBV;
+    int PVCamNumSpeedTableEntriesRBV;
+    int PVCamSpeedTableIndex;
+    int PVCamSpeedTableIndexRBV;
+    int PVCamBitDepthRBV;
+    int PVCamPixelTimeRBV;
+    int PVCamGainIndex;
+    int PVCamGainIndexRBV;
+    int PVCamMaxGainIndexRBV;
+    int PVCamMinShutterOpenDelayRBV;
+    int PVCamMaxShutterOpenDelayRBV;
+    int PVCamMinShutterCloseDelayRBV;
+    int PVCamMaxShutterCloseDelayRBV;
+    int PVCamShutterOpenDelay;
+    int PVCamShutterOpenDelayRBV;
+    int PVCamShutterCloseDelay;
+    int PVCamShutterCloseDelayRBV;
+    int PVCamMeasuredTemperatureRBV;
+    int PVCamMinTemperatureRBV;
+    int PVCamMaxTemperatureRBV;
+    int PVCamSetTemperature;
+    int PVCamSetTemperatureRBV;
+    int PVCamDetectorMode;
+    int PVCamDetectorModeRBV;
+    int PVCamTriggerMode;
+    int PVCamTriggerModeRBV;
+    int PVCamTriggerEdge;
+    int PVCamTriggerEdgeRBV;
+    #define LAST_PVCAM_PARAM PVCamTriggerEdgeRBV
 
-char			*detectorList[5];
+private:
+int16           numDetectorsInstalled,
+                detectorSelected,
+                detectorHandle;
+
+char            *detectorList[5];
 
 unsigned short  *rawData;
 
-	void outputErrorMessage (const char *functionName, char *appMessage);
+    void outputErrorMessage (const char *functionName, char *appMessage);
 
-	void initializeDetectorInterface (void);
-	void selectDetector (int selectedDetector);
+    void initializeDetectorInterface (void);
+    void selectDetector (int selectedDetector);
 
-	void queryCurrentSettings (void);
+    void queryCurrentSettings (void);
 
-	void initializeDetector (void);
+    void initializeDetector (void);
 
-	int getAcquireStatus (void);
+    int getAcquireStatus (void);
 
 };
+
+#define NUM_PVCAM_PARAMS (&LAST_PVCAM_PARAM - &FIRST_PVCAM_PARAM + 1)
 
 //______________________________________________________________________________________________
 
