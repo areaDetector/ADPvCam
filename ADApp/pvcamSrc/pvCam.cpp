@@ -55,7 +55,7 @@ pvCam::pvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t data
     detectorSelected = 0;
     numDetectorsInstalled = 0;
     detectorHandle = 0;
-
+	rawData = NULL;
 
     createParam(PVCamInitDetectorString,             asynParamInt32,   &PVCamInitDetector);
     createParam(PVCamSlot1CamString,                 asynParamOctet,   &PVCamSlot1Cam);
@@ -105,7 +105,7 @@ pvCam::pvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t data
     createParam(PVCamTriggerModeRBVString,           asynParamInt32,   &PVCamTriggerModeRBV);
     createParam(PVCamTriggerEdgeString,              asynParamInt32,   &PVCamTriggerEdge);
     createParam(PVCamTriggerEdgeRBVString,           asynParamInt32,   &PVCamTriggerEdgeRBV);
-    
+
     /* Create the epicsEvents for signaling to the simulate task when acquisition starts and stops */
     this->startEventId = epicsEventCreate(epicsEventEmpty);
     if (!this->startEventId) {
@@ -837,6 +837,7 @@ const char      *functionName   = "pvCam::queryCurrentSettings ()";
 int             status          =  asynSuccess;
 int             addr            =  0;
 uns16           ui16Value;
+uns32           ui32Value;
 int16           i16Value,
                 parallelSize,
                 pixelParallelSize,
@@ -968,10 +969,10 @@ char            cValue[CCD_NAME_LEN];
 
 
     //Full well capacity
-    if (!pl_get_param (detectorHandle, PARAM_FWELL_CAPACITY, ATTR_MAX, (void *) &ui16Value))
+    if (!pl_get_param (detectorHandle, PARAM_FWELL_CAPACITY, ATTR_MAX, (void *) &ui32Value))
         outputErrorMessage (functionName, "pl_get_param (PARAM_FWELL_CAPACITY,  ATTR_MAX)");
-    printf ("Full well capacity: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamFullWellCapacityRBV, ui16Value);
+    printf ("Full well capacity: %d\n", ui32Value);
+    status |= setIntegerParam(addr, PVCamFullWellCapacityRBV, ui32Value);
 
 
     //Number of ports
@@ -1001,7 +1002,7 @@ char            cValue[CCD_NAME_LEN];
     status |= setIntegerParam(addr, PVCamSpeedTableIndexRBV, ui16Value);
 
 
-    //Get max gain
+	//Get max gain
     if (!pl_get_param (detectorHandle, PARAM_GAIN_INDEX, ATTR_MAX, (void *) &ui16Value))
         outputErrorMessage (functionName, "pl_get_param (PARAM_GAIN_INDEX, ATTR_MAX)");
     printf ("Max gain index: %d\n", ui16Value);
@@ -1058,11 +1059,11 @@ char            cValue[CCD_NAME_LEN];
 
 
     //Detector Mode
-    if (!pl_get_param (detectorHandle, PARAM_PMODE, ATTR_CURRENT, (void *) &ui16Value))
+    if (!pl_get_param (detectorHandle, PARAM_PMODE, ATTR_CURRENT, (void *) &ui32Value))
         outputErrorMessage (functionName, "pl_get_param (PARAM_PMODE, ATTR_CURRENT)");
-    printf ("Detector Mode: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamDetectorMode, ui16Value);
-    status |= setIntegerParam(addr, PVCamDetectorModeRBV, ui16Value);
+    printf ("Detector Mode: %d\n", ui32Value);
+    status |= setIntegerParam(addr, PVCamDetectorMode, ui32Value);
+    status |= setIntegerParam(addr, PVCamDetectorModeRBV, ui32Value);
 
 
     //Trigger Edge
@@ -1226,7 +1227,7 @@ void pvCam::initializeDetector (void)
     int16Parm = (int16) dValue * 1000;
     status |= getIntegerParam(PVCamTriggerMode, &iValue);
     int16Parm2 = iValue;
-    printf ("binX: %d, binY: %d, minx: %d, miny: %d, sizex: %d, sizey: %d, triggerMode: %d, exposureTime: %d\n", 
+    printf ("binX: %d, binY: %d, minx: %d, miny: %d, sizex: %d, sizey: %d, triggerMode: %d, exposureTime: %d\n",
              binX, binY, minX, minY, sizeX, sizeY, (int)int16Parm2, (int)int16Parm);
     if (!pl_exp_setup_seq (detectorHandle, 1, 1, &roi, int16Parm2, int16Parm, &rawDataSize))
         outputErrorMessage (functionName, "pl_exp_setup_seq");
