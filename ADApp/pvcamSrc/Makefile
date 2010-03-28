@@ -12,6 +12,8 @@ LIBRARY_IOC_cygwin32 = pvCam
 LIB_SRCS += pvCam.cpp
 LIB_SRCS += drvPVCamEpics.c
 LIB_LIBS += NDPlugin ADBase netCDF
+LIB_LIBS_Linux += PvAPI ImageLib
+LIB_LIBS_WIN32 += PvAPI ImageLib
 LIB_LIBS += pvcam32 pv_icl32
 LIB_LIBS += calc busy sscan autosave
 LIB_LIBS += asyn
@@ -30,6 +32,8 @@ pvCamApp_SRCS_DEFAULT += pvCamApp_registerRecordDeviceDriver.cpp pvCamAppMain.cp
 # Add locally compiled object code
 pvCamApp_LIBS += pvCam
 pvCamApp_LIBS += NDPlugin ADBase netCDF
+pvCamApp_LIBS_Linux += PvAPI ImageLib
+pvCamApp_LIBS_WIN32 += PvAPI ImageLib
 pvCamApp_LIBS += pvcam32 pv_icl32
 pvCamApp_LIBS += calc busy sscan autosave 
 pvCamApp_LIBS += asyn
