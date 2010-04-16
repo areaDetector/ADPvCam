@@ -396,12 +396,12 @@ void pvCam::pvCamAcquisitionTask()
     double acquireTime, acquirePeriod, delay;
     epicsTimeStamp startTime, endTime;
     double elapsedTime;
-
+	int abort;
     /* Loop forever */
     while (1)
     {
         this->lock();
-
+		abort = 0;
         /* Is acquisition active? */
         getIntegerParam(addr, ADAcquire, &acquire);
 
@@ -451,6 +451,11 @@ void pvCam::pvCamAcquisitionTask()
                     outputErrorMessage (functionName, "pl_exp_abort");
 
                 acquire = 0;
+				abort = 1;
+				this->unlock();
+				setIntegerParam(addr, ADStatus, ADStatusReadout);
+				callParamCallbacks(addr, addr);
+				break;
             }
             else
                 acquire = this->getAcquireStatus();
@@ -463,75 +468,77 @@ void pvCam::pvCamAcquisitionTask()
         }
         //Acquire Image End
 
-        /* Update the image */
-        status = computeImage();
-        if (status) {
-            this->unlock();
-            continue;
-        }
+		if (!abort) {
+			/* Update the image */
+			status = computeImage();
+			if (status) {
+				this->unlock();
+				continue;
+			}
 
-        pImage = this->pArrays[addr];
+			pImage = this->pArrays[addr];
 
-        epicsTimeGetCurrent(&endTime);
-        elapsedTime = epicsTimeDiffInSeconds(&endTime, &startTime);
+			epicsTimeGetCurrent(&endTime);
+			elapsedTime = epicsTimeDiffInSeconds(&endTime, &startTime);
 
-        /* Get the current parameters */
-        getIntegerParam(addr, NDArraySizeX, &imageSizeX);
-        getIntegerParam(addr, NDArraySizeY, &imageSizeY);
-        getIntegerParam(addr, NDArraySize,  &imageSize);
-        getIntegerParam(addr, NDDataType,   &dataType);
-        getIntegerParam(addr, NDAutoSave,   &autoSave);
-        getIntegerParam(addr, NDArrayCounter, &imageCounter);
-        imageCounter++;
-        setIntegerParam(addr, NDArrayCounter, imageCounter);
+			/* Get the current parameters */
+			getIntegerParam(addr, NDArraySizeX, &imageSizeX);
+			getIntegerParam(addr, NDArraySizeY, &imageSizeY);
+			getIntegerParam(addr, NDArraySize,  &imageSize);
+			getIntegerParam(addr, NDDataType,   &dataType);
+			getIntegerParam(addr, NDAutoSave,   &autoSave);
+			getIntegerParam(addr, NDArrayCounter, &imageCounter);
+			imageCounter++;
+			setIntegerParam(addr, NDArrayCounter, imageCounter);
 
-        /* Put the frame number and time stamp into the buffer */
-        pImage->uniqueId = imageCounter;
-        pImage->timeStamp = startTime.secPastEpoch + startTime.nsec / 1.e9;
+			/* Put the frame number and time stamp into the buffer */
+			pImage->uniqueId = imageCounter;
+			pImage->timeStamp = startTime.secPastEpoch + startTime.nsec / 1.e9;
 
-        /* Call the NDArray callback */
-        /* Must release the lock here, or we can get into a deadlock, because we can
-         * block on the plugin lock, and the plugin can be calling us */
-        this->unlock();
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-             "%s:%s: calling imageData callback\n", driverName, functionName);
-        doCallbacksGenericPointer(pImage, NDArrayData, addr);
-        this->lock();
+			/* Call the NDArray callback */
+			/* Must release the lock here, or we can get into a deadlock, because we can
+			 * block on the plugin lock, and the plugin can be calling us */
+			this->unlock();
+			asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+				 "%s:%s: calling imageData callback\n", driverName, functionName);
+			doCallbacksGenericPointer(pImage, NDArrayData, addr);
+			this->lock();
 
-        /* See if acquisition is done */
-        if (this->imagesRemaining > 0)
-            this->imagesRemaining--;
+			/* See if acquisition is done */
+			if (this->imagesRemaining > 0)
+				this->imagesRemaining--;
 
-        if (this->imagesRemaining == 0)
-        {
-            setIntegerParam(addr, ADAcquire, ADStatusIdle);
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                  "%s:%s: acquisition completed\n", driverName, functionName);
-        }
+			if (this->imagesRemaining == 0)
+			{
+				setIntegerParam(addr, ADAcquire, ADStatusIdle);
+				asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+					  "%s:%s: acquisition completed\n", driverName, functionName);
+			}
 
-        /* Call the callbacks to update any changes */
-        callParamCallbacks(addr, addr);
+			/* Call the callbacks to update any changes */
+			callParamCallbacks(addr, addr);
 
-        /* If we are acquiring then sleep for the acquire period minus elapsed time. */
-        if (acquire)
-        {
-            /* We set the status to readOut to indicate we are in the period delay */
-            setIntegerParam(addr, ADStatus, ADStatusReadout);
-            callParamCallbacks(addr, addr);
-            /* We are done accessing data structures, release the lock */
-            this->unlock();
-            delay = acquirePeriod - elapsedTime;
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                     "%s:%s: delay=%f\n",
-                      driverName, functionName, delay);
-            if (delay >= epicsThreadSleepQuantum())
-                status = epicsEventWaitWithTimeout(this->stopEventId, delay);
+			/* If we are acquiring then sleep for the acquire period minus elapsed time. */
+			if (acquire)
+			{
+				/* We set the status to readOut to indicate we are in the period delay */
+				setIntegerParam(addr, ADStatus, ADStatusReadout);
+				callParamCallbacks(addr, addr);
+				/* We are done accessing data structures, release the lock */
+				this->unlock();
+				delay = acquirePeriod - elapsedTime;
+				asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+						 "%s:%s: delay=%f\n",
+						  driverName, functionName, delay);
+				if (delay >= epicsThreadSleepQuantum())
+					status = epicsEventWaitWithTimeout(this->stopEventId, delay);
 
-        }
-        else
-        {
-            this->unlock();
-        }
+			}
+			else
+			{
+				this->unlock();
+			}
+		}
     }
 }
 
