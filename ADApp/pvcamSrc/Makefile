@@ -35,7 +35,7 @@ pvCamApp_LIBS += NDPlugin ADBase netCDF
 pvCamApp_LIBS_Linux += PvAPI ImageLib
 pvCamApp_LIBS_WIN32 += PvAPI ImageLib
 pvCamApp_LIBS += pvcam32 pv_icl32
-pvCamApp_LIBS += calc busy sscan autosave 
+pvCamApp_LIBS += calc busy sscan autosave mca
 pvCamApp_LIBS += asyn
 pvCamApp_LIBS += $(EPICS_BASE_IOC_LIBS)
 
