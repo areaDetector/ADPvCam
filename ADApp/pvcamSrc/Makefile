@@ -7,14 +7,18 @@ include $(TOP)/configure/CONFIG
 USR_CFLAGS +=   -DWIN32
 USR_CXXFLAGS += -DWIN32
 
-LIBRARY_IOC_WIN32    = pvCam
-LIBRARY_IOC_cygwin32 = pvCam
+ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
+LIBRARY_IOC = pvCam
+PROD_IOC += pvCamApp
+
+else ifeq (cygwin-x86, $(findstring cygwin-x86, $(T_A)))
+LIBRARY_IOC = pvCam
+PROD_IOC += pvCamApp
+endif
+
 LIB_SRCS += pvCam.cpp
 LIB_SRCS += drvPVCamEpics.c
 LIB_LIBS += pvcam32 pv_icl32
-
-PROD_IOC_WIN32    += pvCamApp
-PROD_IOC_cygwin32 += pvCamApp
 
 # <name>.dbd will be created from <name>Include.dbd
 DBD += pvCamApp.dbd
