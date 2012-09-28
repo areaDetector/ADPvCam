@@ -1296,8 +1296,6 @@ void pvCam::initializeDetector (void)
     int32           int16Parm,
                     int16Parm2;
 
-    int16           i16Value;
-
     int             binX,
                     binY,
                     minX,
@@ -1430,7 +1428,7 @@ void pvCam::initializeDetector (void)
     int16Parm2 = iValue;
     printf ("binX: %d, binY: %d, minx: %d, miny: %d, sizex: %d, sizey: %d, triggerMode: %d, exposureTime: %d\n",
              binX, binY, minX, minY, sizeX, sizeY, (int)int16Parm2, (int)int16Parm);
-    if (!pl_exp_setup_seq (detectorHandle, 1, 1, &roi, int16Parm2, int16Parm, &rawDataSize))
+    if (!pl_exp_setup_seq (detectorHandle, 1, 1, &roi, (int16)int16Parm2, int16Parm, &rawDataSize))
         outputErrorMessage (functionName, "pl_exp_setup_seq");
     status |= setIntegerParam(PVCamTriggerModeRBV, iValue);
 
