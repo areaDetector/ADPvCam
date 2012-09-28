@@ -1425,7 +1425,7 @@ void pvCam::initializeDetector (void)
 
     //Exposure Time
     status |= getDoubleParam(ADAcquireTime,  &dValue);
-    int16Parm = (int16) (dValue * 1000);
+    int16Parm = (int32) (dValue * 1000);
     status |= getIntegerParam(PVCamTriggerMode, &iValue);
     int16Parm2 = iValue;
     printf ("binX: %d, binY: %d, minx: %d, miny: %d, sizex: %d, sizey: %d, triggerMode: %d, exposureTime: %d\n",
