@@ -216,7 +216,7 @@ unsigned short  *rawData;
 	bool tempAvailable;
 };
 
-#define NUM_PVCAM_PARAMS (&LAST_PVCAM_PARAM - &FIRST_PVCAM_PARAM + 1)
+#define NUM_PVCAM_PARAMS ((int)(&LAST_PVCAM_PARAM - &FIRST_PVCAM_PARAM + 1))
 
 //______________________________________________________________________________________________
 

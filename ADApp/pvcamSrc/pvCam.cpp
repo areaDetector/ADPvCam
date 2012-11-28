@@ -49,7 +49,7 @@ pvCam::pvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t data
     const char *functionName = "pvCam::pvCam()";
     int status = asynSuccess;
     int addr=0;
-    int dims[2];
+    size_t dims[2];
 
     //init some variables
     detectorSelected = 0;
