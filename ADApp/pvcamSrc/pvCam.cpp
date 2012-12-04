@@ -886,7 +886,7 @@ char *availStr[] = {"NO", "YES"};
                 status |= setStringParam(addr, PVCamChipNameRBV, cValue);
                 outputErrorMessage (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_CURRENT)\n");
                 outputErrorMessage (functionName, "Name is too long for storage allotted\n");
-                printf("PARAM_CHIM_NAME ATTR_COUNT = %d, CCD_NAME_LEN = %d\n", ui32Value, CCD_NAME_LEN);
+                printf("PARAM_CHIM_NAME ATTR_COUNT = %d, CCD_NAME_LEN = %d\n", (int)ui32Value, CCD_NAME_LEN);
         }
     }
 
@@ -1031,7 +1031,7 @@ char *availStr[] = {"NO", "YES"};
     if (paramAvail) {
         if (!pl_get_param (detectorHandle, PARAM_FWELL_CAPACITY, ATTR_MAX, (void *) &ui32Value))
             outputErrorMessage (functionName, "pl_get_param (PARAM_FWELL_CAPACITY,  ATTR_MAX)");
-        printf ("Full well capacity: %d\n", ui32Value);
+        printf ("Full well capacity: %d\n", (int)ui32Value);
         status |= setIntegerParam(addr, PVCamFullWellCapacityRBV, ui32Value);
     }
     else {
@@ -1186,7 +1186,7 @@ char *availStr[] = {"NO", "YES"};
     if (!pl_ddi_get_ver(&ui16Value) ) {
         outputErrorMessage (functionName, "pl_ddi_get_ver");
     }
-        sprintf(cValue, "%d.%d", (0xFF00&ui16Value)>>8, (0x00F0&ui16Value)>>4, (0x000F&ui16Value) );
+        sprintf(cValue, "%d.%d.%d", (0xFF00&ui16Value)>>8, (0x00F0&ui16Value)>>4, (0x000F&ui16Value) );
     printf("Device Driver Version %s\n", cValue);
     status |= setStringParam(addr, PVCamDevDrvVersRBV, cValue);
 
