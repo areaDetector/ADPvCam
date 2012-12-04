@@ -3,7 +3,7 @@
 /*****************************************************************************/
 #ifndef _MASTER_H
 #define _MASTER_H
-static const char *_master_h_="$Header: /net/beams-nfs/export/local/cvs/support/areaDetector/ADApp/pvcamSupport/master.h,v 1.2 2009-08-12 19:06:39 rivers Exp $";
+/* static const char *_master_h_="$Header: /net/beams-nfs/export/local/cvs/support/areaDetector/ADApp/pvcamSupport/master.h,v 1.2 2009-08-12 19:06:39 rivers Exp $"; */
 
 #ifndef WIN32
     #error OS Not Supported

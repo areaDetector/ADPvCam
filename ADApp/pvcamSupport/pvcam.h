@@ -4,7 +4,7 @@
 
 #ifndef _PVCAM_H
 #define _PVCAM_H
-static const char *_pvcam_h_="$Header: /net/beams-nfs/export/local/cvs/support/areaDetector/ADApp/pvcamSupport/pvcam.h,v 1.1 2009-08-05 15:47:47 hammonds Exp $";
+/* static const char *_pvcam_h_="$Header: /net/beams-nfs/export/local/cvs/support/areaDetector/ADApp/pvcamSupport/pvcam.h,v 1.1 2009-08-05 15:47:47 hammonds Exp $"; */
 /*********************** Constant & Type Definitions *************************/
 
 /************************ Class 2: Data types ********************************/
