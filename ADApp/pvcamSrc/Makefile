@@ -9,7 +9,7 @@ USR_CXXFLAGS += -DWIN32
 
 ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
 LIBRARY_IOC = pvCam
-PROD_NAME += pvCamApp
+PROD_NAME = pvCamApp
 PROD_IOC += $(PROD_NAME)
 
 else ifeq (cygwin-x86, $(findstring cygwin-x86, $(T_A)))
