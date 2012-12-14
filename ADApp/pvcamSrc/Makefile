@@ -7,14 +7,14 @@ include $(TOP)/configure/CONFIG
 USR_CFLAGS +=   -DWIN32
 USR_CXXFLAGS += -DWIN32
 
+PROD_NAME = pvCamApp
 ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
 LIBRARY_IOC = pvCam
-PROD_NAME = pvCamApp
 PROD_IOC += $(PROD_NAME)
 
 else ifeq (cygwin-x86, $(findstring cygwin-x86, $(T_A)))
 LIBRARY_IOC = pvCam
-PROD_IOC += pvCamApp
+PROD_IOC += $(PROD_NAME)
 endif
 
 LIB_SRCS += pvCam.cpp
