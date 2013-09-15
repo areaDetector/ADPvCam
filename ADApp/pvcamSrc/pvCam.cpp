@@ -494,6 +494,7 @@ void pvCam::pvCamAcquisitionTask()
         /* Put the frame number and time stamp into the buffer */
         pImage->uniqueId = imageCounter;
         pImage->timeStamp = startTime.secPastEpoch + startTime.nsec / 1.e9;
+        updateTimeStamp(&pImage->epicsTS);
 
         /* Call the NDArray callback */
         /* Must release the lock here, or we can get into a deadlock, because we can
