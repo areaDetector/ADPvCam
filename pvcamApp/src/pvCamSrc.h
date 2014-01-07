@@ -104,8 +104,8 @@ static const char *driverName = "drvPVCam";
 #define PVCamPCIFWVersRBVString             "PVCAM_PCIFWVERS_RBV"
 #define PVCamHeadSerialNumRBVString         "PVCAM_HEADSERNUM_RBV"
 #define PVCamSerialNumRBVString             "PVCAM_SERIALNUM_RBV"
-#define PVCamPVCamVersRBVString 			"PVCAM_PVCAMVERS_RBV"
-#define PVCamDevDrvVersRBVString			"PVCAM_DEVDRVVERS_RBV"
+#define PVCamPVCamVersRBVString             "PVCAM_PVCAMVERS_RBV"
+#define PVCamDevDrvVersRBVString            "PVCAM_DEVDRVVERS_RBV"
 
 //______________________________________________________________________________________________
 
@@ -188,10 +188,10 @@ protected:
     int PVCamTriggerEdgeRBV;
     int PVCamCamFirmwareVersRBV;
     int PVCamPCIFWVersRBV;
-	int PVCamHeadSerialNumRBV;
-	int PVCamSerialNumRBV;
-	int PVCamPVCamVersRBV;
-	int PVCamDevDrvVersRBV;
+    int PVCamHeadSerialNumRBV;
+    int PVCamSerialNumRBV;
+    int PVCamPVCamVersRBV;
+    int PVCamDevDrvVersRBV;
     #define LAST_PVCAM_PARAM PVCamDevDrvVersRBV
 
 private:
@@ -213,7 +213,8 @@ unsigned short  *rawData;
     void initializeDetector (void);
 
     int getAcquireStatus (void);
-	bool tempAvailable;
+    bool tempAvailable;
+  
 };
 
 #define NUM_PVCAM_PARAMS ((int)(&LAST_PVCAM_PARAM - &FIRST_PVCAM_PARAM + 1))
