@@ -4,7 +4,7 @@ include $(TOP)/configure/CONFIG
 DIRS := $(DIRS) configure
 DIRS := $(DIRS) pvcamSupport
 DIRS := $(DIRS) pvcamApp
-prosilicaApp_DEPEND_DIRS += pvcamSupport
+pvcamApp_DEPEND_DIRS += pvcamSupport
 ifeq ($(BUILD_IOCS), YES)
 DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard iocs))
 iocs_DEPEND_DIRS += pvcamApp
