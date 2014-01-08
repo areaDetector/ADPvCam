@@ -35,7 +35,11 @@ else ifeq (cygwin-x86, $(findstring cygwin-x86, $(T_A)))
 PROD_LIBS += pvcam32 pv_icl32
 
 else ifeq (linux-x86, $(T_A))
-PROD_LIBS += pvcam
+# The pvcam library is only provided as a .so file, not .a.
+# When building statically we must declare it to be a SYS_LIB so it finds the .so file.
+# Do this even when building dynamically for simplicity.
+SHRLIB_SEARCH_DIRS += lib/linux-x86
+PROD_SYS_LIBS += pvcam
 PROD_SYS_LIBS += raw1394
 
 endif
