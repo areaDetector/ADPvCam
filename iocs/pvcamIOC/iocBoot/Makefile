@@ -1,6 +1,6 @@
-TOP = ../..
+TOP = ..
 include $(TOP)/configure/CONFIG
-ARCH = win32-x86
-#ARCH = linux-x86
-TARGETS = envPaths
-include $(TOP)/configure/RULES.ioc
+DIRS += $(wildcard *ioc*)
+DIRS += $(wildcard as*)
+include $(EPICS_BASE)/configure/RULES_DIRS
+
