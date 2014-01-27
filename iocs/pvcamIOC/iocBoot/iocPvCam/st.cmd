@@ -35,6 +35,7 @@ dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/NDStdArrays.template", "P=$(PREFIX),R=i
 
 # Load all other plugins using commonPlugins.cmd
 < ../commonPlugins.cmd
+set_requestfile_path("$(ADPVCAM)/pvcamApp/Db")
 
 #asynSetTraceIOMask("$(PORT)",0,2)
 #asynSetTraceMask("$(PORT)",0,255)
