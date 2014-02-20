@@ -2,7 +2,7 @@ errlogInit(20000)
 
 < envPaths
 
-dbLoadDatabase("$(AREA_DETECTOR)/dbd/pvCamApp.dbd"
+dbLoadDatabase("$(TOP)/dbd/pvCamApp.dbd"
 pvCamApp_registerRecordDeviceDriver(pdbbase)
 
 epicsEnvSet("PREFIX", "13PVCAM1:")
@@ -24,17 +24,17 @@ epicsEnvSet("NCHANS", "2048")
 #    6 = NDFloat32
 #    7 = NDFloat64
 #
-pvCamConfig("$(PORT)", $(XSIZE), $(YSIZE), 3, 50, 100000000)
-dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/ADBase.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
-dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/pvCam.template", "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
+pvCamConfig("$(PORT)", $(XSIZE), $(YSIZE), 3, 0, 0)
+dbLoadRecords("$(ADCORE)/db/ADBase.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
+dbLoadRecords("$(ADPVCAM)/db/pvCam.template", "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 # Create a standard arrays plugin, set it to get data from pvCamera driver.
 NDStdArraysConfigure("Image1", 1, 0, "$(PORT)", 0, 10000000)
-dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=image:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
-dbLoadRecords("$(AREA_DETECTOR)/ADApp/Db/NDStdArrays.template", "P=$(PREFIX),R=image:,PORT=Image1,ADDR=0,TIMEOUT=1,TYPE=Int16,FTVL=SHORT,NELEMENTS=4194304")
+dbLoadRecords("$(ADCORE)/db/NDPluginBase.template","P=$(PREFIX),R=image:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
+dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image:,PORT=Image1,ADDR=0,TIMEOUT=1,TYPE=Int16,FTVL=SHORT,NELEMENTS=4194304")
 
 # Load all other plugins using commonPlugins.cmd
-< ../commonPlugins.cmd
+< $(ADCORE)/iocBoot/commonPlugins.cmd
 set_requestfile_path("$(ADPVCAM)/pvcamApp/Db")
 
 #asynSetTraceIOMask("$(PORT)",0,2)
