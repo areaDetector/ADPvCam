@@ -1,10 +1,18 @@
 ADPvCam
 ===========
-An <a href="http://www.aps.anl.gov/epics/">EPICS</a> 
-<a href="http://cars.uchicago.edu/software/epics/areaDetector.html">areaDetector</a> 
-driver for the <a href="http://www.roperscientific.com/">Roper Scientific</a>
-detectors, which includes all cameras from <a href="http://www.photomet.com/">Photometrics</a>
+An 
+[EPICS](http://www.aps.anl.gov/epics/) 
+[areaDetector](http://cars.uchicago.edu/software/epics/areaDetector.html) 
+driver for the 
+[Roper Scientific](http://www.roperscientific.com/)
+detectors, which includes all cameras from 
+[Photometrics](http://www.photomet.com/)
 and most but not all cameras from 
-<a href="http://www.princetoninstruments.com/">Princeton Instruments</a>.
-The driver is based upon the <a href="www.photometrics.com/support/downloads/pvcam.php">PVCAM library</a> 
+[Princeton Instruments](http://www.princetoninstruments.com/).
+The driver is based on the 
+[PVCAM library](www.photometrics.com/support/downloads/pvcam.php)
 from Photometrics, and runs on Microsoft Windows and Linux. 
+
+Additional information:
+* [Documentation](http://cars.uchicago.edu/software/epics/pvcamDoc.html).
+* [Release notes and links to source and binary releases](RELEASE.md).
