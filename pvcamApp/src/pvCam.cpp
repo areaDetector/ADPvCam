@@ -735,7 +735,7 @@ const char         *functionName = "pvCam::~pvCam ()";
 //_____________________________________________________________________________________________
 
 
-void pvCam::outputErrorMessage (const char *functionName, char *appMessage)
+void pvCam::outputErrorMessage (const char *functionName, const char *appMessage)
 {
 int16    errorCode;
 char    errorMessage[256];
@@ -864,7 +864,7 @@ int16           i16Value,
 double          dValue;
 char            cValue[CCD_NAME_LEN];
 rs_bool            paramAvail;
-char *availStr[] = {"NO", "YES"};
+const char *availStr[] = {"NO", "YES"};
 
     printf ("\n\n\nBegin detector ...\n");
 

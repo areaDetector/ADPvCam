@@ -203,7 +203,7 @@ char            *detectorList[5];
 
 unsigned short  *rawData;
 
-    void outputErrorMessage (const char *functionName, char *appMessage);
+    void outputErrorMessage (const char *functionName, const char *appMessage);
 
     void initializeDetectorInterface (void);
     void selectDetector (int selectedDetector);
