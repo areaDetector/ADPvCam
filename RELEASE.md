@@ -33,3 +33,9 @@ R1-9-1 and earlier
 ------------------
 Release notes are part of the
 [areaDetector Release Notes](http://cars.uchicago.edu/software/epics/areaDetectorReleaseNotes.html).
+
+Future Releases
+===============
+* Add 64-bit SDK files for PvCAM
+* Break into 2 respositories, one based on Photometrics PvCam library, 
+  the other based on Princeton Instruments PvCam library.
