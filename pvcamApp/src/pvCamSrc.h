@@ -109,6 +109,8 @@ static const char *driverName = "drvPVCam";
 
 //______________________________________________________________________________________________
 
+/** Driver for Roper (Photometrics and Princeton Instruments) cameras using the PvCam library.
+  */
 class pvCam : public ADDriver
 {
 public:
