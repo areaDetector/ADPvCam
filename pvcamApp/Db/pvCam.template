@@ -2,6 +2,8 @@
 # Brian Tieman
 # 06/14/2009
 
+include "ADBase.template"
+
 record(longout, "$(P)$(R)Initialize")
 {
    field(DTYP, "asynInt32")
