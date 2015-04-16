@@ -5,12 +5,22 @@ errlogInit(20000)
 dbLoadDatabase("$(TOP)/dbd/pvCamApp.dbd"
 pvCamApp_registerRecordDeviceDriver(pdbbase)
 
+# Prefix for all records
 epicsEnvSet("PREFIX", "13PVCAM1:")
+# The port name for the detector
 epicsEnvSet("PORT",   "PVCAM")
+# The queue size for all plugins
 epicsEnvSet("QSIZE",  "20")
+# The maximim image width; used for row profiles in the NDPluginStats plugin
 epicsEnvSet("XSIZE",  "2048")
+# The maximim image height; used for column profiles in the NDPluginStats plugin
 epicsEnvSet("YSIZE",  "2048")
+# The maximum number of time series points in the NDPluginStats plugin
 epicsEnvSet("NCHANS", "2048")
+# The maximum number of frames buffered in the NDPluginCircularBuff plugin
+epicsEnvSet("CBUFFS", "500")
+# The search path for database files
+epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 
 # Create a pvCam driver
 # pvCamConfig(const char *portName, int maxSizeX, int maxSizeY, int dataType, int maxBuffers, size_t maxMemory)
@@ -25,13 +35,11 @@ epicsEnvSet("NCHANS", "2048")
 #    7 = NDFloat64
 #
 pvCamConfig("$(PORT)", $(XSIZE), $(YSIZE), 3, 0, 0)
-dbLoadRecords("$(ADCORE)/db/ADBase.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 dbLoadRecords("$(ADPVCAM)/db/pvCam.template", "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 # Create a standard arrays plugin, set it to get data from pvCamera driver.
 NDStdArraysConfigure("Image1", 1, 0, "$(PORT)", 0, 10000000)
-dbLoadRecords("$(ADCORE)/db/NDPluginBase.template","P=$(PREFIX),R=image:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
-dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image:,PORT=Image1,ADDR=0,TIMEOUT=1,TYPE=Int16,FTVL=SHORT,NELEMENTS=4194304")
+dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),TYPE=Int16,FTVL=SHORT,NELEMENTS=4194304")
 
 # Load all other plugins using commonPlugins.cmd
 < $(ADCORE)/iocBoot/commonPlugins.cmd
