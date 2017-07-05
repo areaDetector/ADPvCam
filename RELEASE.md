@@ -22,6 +22,11 @@ files respectively, in the configure/ directory of the appropriate release of th
 
 Release Notes
 =============
+R2-2 (05-July-2017)
+----
+* Fixed configure/RELEASE for IOC.
+* Commented out Cygwin builds in Makefiles, no longer works.
+
 
 R2-1 (16-April-2015)
 ----
