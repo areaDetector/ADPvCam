@@ -3,6 +3,9 @@ include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
+ifeq ($(STATIC_BUILD), YES)
+  USR_LDFLAGS_Linux += -Wl,-rpath,$(abspath $(ADPVCAM)/lib/linux-x86)
+endif
 PROD_NAME    = pvCamApp
 
 # Only build for 32bit versions of Windows and Linux
