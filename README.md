@@ -2,7 +2,7 @@ ADPvCam
 ===========
 An 
 [EPICS](http://www.aps.anl.gov/epics/) 
-[areaDetector](http://cars.uchicago.edu/software/epics/areaDetector.html) 
+[areaDetector](https://cars.uchicago.edu/software/epics/areaDetector.html) 
 driver for the 
 [Roper Scientific](http://www.roperscientific.com/)
 detectors, which includes all cameras from 
@@ -14,5 +14,5 @@ The driver is based on the
 from Photometrics, and runs on Microsoft Windows and Linux. 
 
 Additional information:
-* [Documentation](http://cars.uchicago.edu/software/epics/pvcamDoc.html).
+* [Documentation](https://cars.uchicago.edu/software/epics/pvcamDoc.html).
 * [Release notes and links to source and binary releases](RELEASE.md).
