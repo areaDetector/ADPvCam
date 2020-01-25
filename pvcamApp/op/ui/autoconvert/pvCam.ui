@@ -14,7 +14,6 @@
         <string>
 
 QWidget#centralWidget {background: rgba(187, 187, 187, 255);}
-QPushButton::menu-indicator {image: url(none.png); width: 0}
 
 caTable {
        font: 10pt;
@@ -174,7 +173,7 @@ border-radius: 2px;
                 <rect>
                     <x>85</x>
                     <y>34</y>
-                    <width>120</width>
+                    <width>84</width>
                     <height>25</height>
                 </rect>
             </property>
@@ -249,7 +248,7 @@ border-radius: 2px;
                 <rect>
                     <x>14</x>
                     <y>73</y>
-                    <width>156</width>
+                    <width>130</width>
                     <height>20</height>
                 </rect>
             </property>
@@ -387,7 +386,7 @@ border-radius: 2px;
                 <rect>
                     <x>10</x>
                     <y>120</y>
-                    <width>84</width>
+                    <width>75</width>
                     <height>20</height>
                 </rect>
             </property>
@@ -562,7 +561,7 @@ border-radius: 2px;
                 <rect>
                     <x>9</x>
                     <y>148</y>
-                    <width>84</width>
+                    <width>75</width>
                     <height>20</height>
                 </rect>
             </property>
@@ -737,7 +736,7 @@ border-radius: 2px;
                 <rect>
                     <x>10</x>
                     <y>178</y>
-                    <width>84</width>
+                    <width>75</width>
                     <height>20</height>
                 </rect>
             </property>
@@ -1362,7 +1361,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>125</y>
-                    <width>198</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -1452,7 +1451,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>140</y>
-                    <width>210</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -1902,7 +1901,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>215</y>
-                    <width>144</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -1938,7 +1937,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>230</y>
-                    <width>114</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -2262,7 +2261,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>245</y>
-                    <width>138</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -2352,7 +2351,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>260</y>
-                    <width>180</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -2442,7 +2441,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>275</y>
-                    <width>156</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -2802,7 +2801,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>335</y>
-                    <width>114</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -2892,7 +2891,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>350</y>
-                    <width>138</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -3036,7 +3035,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>365</y>
-                    <width>138</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -3072,7 +3071,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>380</y>
-                    <width>144</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -3108,7 +3107,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>395</y>
-                    <width>144</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -3252,7 +3251,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>410</y>
-                    <width>126</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -4577,7 +4576,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>440</y>
-                    <width>132</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -4667,7 +4666,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>455</y>
-                    <width>144</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -4757,7 +4756,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>470</y>
-                    <width>114</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
@@ -4937,7 +4936,7 @@ border-radius: 2px;
                 <rect>
                     <x>445</x>
                     <y>500</y>
-                    <width>126</width>
+                    <width>100</width>
                     <height>10</height>
                 </rect>
             </property>
