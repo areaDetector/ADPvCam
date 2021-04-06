@@ -130,6 +130,10 @@ NDArray             *pRaw;
     /* These are the methods that are new to this class */
     template <typename epicsType> int computeArray(int maxSizeX, int maxSizeY);
 
+
+    // Helper function that checks if 
+    //asynStatus getCameraParam(int16 detectorHandle, uns32 paramID, int16 paramAttr, void* paramVal);
+
     int allocateBuffer();
     int computeImage();
 

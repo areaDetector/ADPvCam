@@ -20,6 +20,10 @@ PROD_IOC += $(PROD_NAME)
 else ifeq (linux-x86, $(T_A))
 PROD_IOC += $(PROD_NAME)
 
+else ifeq (linux-x86_64, $(T_A))
+PROD_IOC += $(PROD_NAME)
+
+
 endif
 
 # <name>.dbd will be created from <name>Include.dbd
@@ -43,6 +47,14 @@ else ifeq (linux-x86, $(T_A))
 # When building statically we must declare it to be a SYS_LIB so it finds the .so file.
 # Do this even when building dynamically for simplicity.
 SHRLIB_SEARCH_DIRS += lib/linux-x86
+PROD_SYS_LIBS += pvcam
+PROD_SYS_LIBS += raw1394
+
+else ifeq (linux-x86_64, $(T_A))
+# The pvcam library is only provided as a .so file, not .a.
+# When building statically we must declare it to be a SYS_LIB so it finds the .so file.
+# Do this even when building dynamically for simplicity.
+SHRLIB_SEARCH_DIRS += lib/linux-x86_64
 PROD_SYS_LIBS += pvcam
 PROD_SYS_LIBS += raw1394
 

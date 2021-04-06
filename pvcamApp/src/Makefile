@@ -17,8 +17,10 @@ LIBRARY_IOC = $(LIBRARY_NAME)
 #USR_CFLAGS +=   -DWIN32
 #USR_CXXFLAGS += -DWIN32
 #LIBRARY_IOC = $(LIBRARY_NAME)
-
 else ifeq (linux-x86, $(T_A))
+LIBRARY_IOC = $(LIBRARY_NAME)
+
+else ifeq (linux-x86_64, $(T_A))
 LIBRARY_IOC = $(LIBRARY_NAME)
 
 endif
@@ -34,9 +36,13 @@ LIB_LIBS += pvcam32 pv_icl32
 else ifeq (cygwin-x86, $(findstring cygwin-x86, $(T_A)))
 LIB_LIBS += pvcam32 pv_icl32
 
-else ifeq (linux-x86, $(T_A))
+
+else ifeq (linux-x86_64, $(T_A))
 LIB_LIBS += pvcam
 
+
+else ifeq (linux-x86, $(T_A))
+LIB_LIBS += pvcam
 endif
 
 DBD += pvCamSupport.dbd

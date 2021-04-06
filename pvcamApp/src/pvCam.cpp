@@ -713,8 +713,8 @@ const char         *functionName = "pvCam::~pvCam ()";
     if (rawData != NULL)
         free (rawData);
 
-    if (!pl_exp_uninit_seq())
-        outputErrorMessage (functionName, "pl_exp_uninit_seq ()");
+    //if (!pl_exp_uninit_seq())
+    //    outputErrorMessage (functionName, "pl_exp_uninit_seq ()");
 
     if (!pl_cam_close (detectorHandle))
         outputErrorMessage (functionName, "pl_cam_close ()");
@@ -808,11 +808,11 @@ int             addr            =    0;
 
 void pvCam::selectDetector (int selectedDetector)
 {
-const char  *functionName   = "pvCam::selectDetector (int selectedDetector)";
-int         status          =    asynSuccess;
-int         addr            =    0;
+    const char *functionName = "pvCam::selectDetector (int selectedDetector)";
+    int status = asynSuccess;
+    int addr = 0;
 
-printf ("Selecting detector %d\n", selectedDetector);
+    printf ("Selecting detector %d\n", selectedDetector);
 
     if ((selectedDetector <= numDetectorsInstalled) && (selectedDetector > 0))
     {
@@ -820,22 +820,24 @@ printf ("Selecting detector %d\n", selectedDetector);
 
         if (detectorHandle != 0)
         {
-            if (!pl_exp_uninit_seq())
-                outputErrorMessage (functionName, "pl_exp_uninit_seq ()");
+            //if (!pl_exp_uninit_seq())
+            //    outputErrorMessage (functionName, "pl_exp_uninit_seq ()");
 
             if (!pl_cam_close (detectorHandle))
                 outputErrorMessage (functionName, "pl_cam_close ()");
         }
 
         //Open camera...
-printf ("Opening camera %s\n", detectorList[detectorSelected-1]);
+        printf ("Opening camera %s\n", detectorList[detectorSelected-1]);
         if (!pl_cam_open (detectorList[detectorSelected-1], &detectorHandle, OPEN_EXCLUSIVE))
             outputErrorMessage (functionName, "pl_cam_open");
-        if (!pl_cam_get_diags (detectorHandle))
-            outputErrorMessage (functionName, "pl_cam_get_diags");
+        
+        // Depracated in newer SDK versions
+        //if (!pl_cam_get_diags (detectorHandle))
+        //    outputErrorMessage (functionName, "pl_cam_get_diags");
 
-        if (!pl_exp_init_seq())
-            outputErrorMessage (functionName, "pl_cam_init_seq");
+        //if (!pl_exp_init_seq())
+        //    outputErrorMessage (functionName, "pl_cam_init_seq");
 
         status |= setIntegerParam(addr, PVCamDetectorSelected, detectorSelected);
 
@@ -847,20 +849,20 @@ printf ("Opening camera %s\n", detectorList[detectorSelected-1]);
 
 void pvCam::queryCurrentSettings (void)
 {
-const char      *functionName   = "pvCam::queryCurrentSettings ()";
-int             status          =  asynSuccess;
-int             addr            =  0;
-uns16           ui16Value;
-uns32           ui32Value;
-int16           i16Value,
-                parallelSize,
-                pixelParallelSize,
-                serialSize,
-                pixelSerialSize;
-double          dValue;
-char            cValue[CCD_NAME_LEN];
-rs_bool            paramAvail;
-const char *availStr[] = {"NO", "YES"};
+    const char      *functionName   = "pvCam::queryCurrentSettings ()";
+    int             status          =  asynSuccess;
+    int             addr            =  0;
+    uns16           ui16Value;
+    uns32           ui32Value;
+    int16           i16Value,
+                    parallelSize,
+                    pixelParallelSize,
+                    serialSize,
+                    pixelSerialSize;
+    double          dValue;
+    char            cValue[CCD_NAME_LEN];
+    rs_bool            paramAvail;
+    const char *availStr[] = {"NO", "YES"};
 
     printf ("\n\n\nBegin detector ...\n");
 
@@ -1157,9 +1159,11 @@ const char *availStr[] = {"NO", "YES"};
 
 
 
-//Trigger Edge
+    /*
+    //Trigger Edge
     if (!pl_get_param(detectorHandle, PARAM_EDGE_TRIGGER, ATTR_AVAIL, (void *) &paramAvail))
         outputErrorMessage (functionName, "pl_get_param(PARAM_EDGE_TRIGGER, ATTR_AVAIL)");
+    
     printf ("Trigger avail: %s\n", availStr[paramAvail]);
     if (paramAvail)
     {
@@ -1177,13 +1181,16 @@ const char *availStr[] = {"NO", "YES"};
         status |= setIntegerParam(addr, PVCamTriggerEdge, 0);
         status |= setIntegerParam(addr, PVCamTriggerEdgeRBV, 0);
     }
+    */
 
 
-    //device driver version
-    if (!pl_ddi_get_ver(&ui16Value) ) {
-        outputErrorMessage (functionName, "pl_ddi_get_ver");
+    uns16 fwVersion;
+    //device firmware version
+    if (PV_OK != pl_get_param(detectorHandle, PARAM_HEAD_SER_NUM_ALPHA, ATTR_CURRENT,
+           (void *)&fwVersion) ) {
+        outputErrorMessage (functionName, "pl_get_param PARAM_HEAD_SER_NUM_ALPHA");
     }
-        sprintf(cValue, "%d.%d.%d", (0xFF00&ui16Value)>>8, (0x00F0&ui16Value)>>4, (0x000F&ui16Value) );
+    sprintf(cValue, "%d.%d", (fwVersion >> 8) & 0xFF, (fwVersion >> 0) & 0xFF );
     printf("Device Driver Version %s\n", cValue);
     status |= setStringParam(addr, PVCamDevDrvVersRBV, cValue);
 
@@ -1231,7 +1238,7 @@ const char *availStr[] = {"NO", "YES"};
     printf("Head Serial Number %s\n", cValue);
     status |= setStringParam(addr, PVCamHeadSerialNumRBV, cValue);
 
-    // Serial Number
+    /*/ Serial Number
     if (!pl_get_param(detectorHandle, PARAM_SERIAL_NUM, ATTR_AVAIL, (void *) &paramAvail))
         outputErrorMessage (functionName, "pl_get_param(PARAM_SERIAL_NUM, ATTR_AVAIL)");
     printf ("Serial Number available: %s\n", availStr[paramAvail]);
@@ -1243,9 +1250,13 @@ const char *availStr[] = {"NO", "YES"};
         printf("Serial Number %d\n", ui16Value);
 
     }
+    
     else {
         ui16Value = (uns16)0;
     }
+    */
+    // Serial num param doesnt exist in new SDK version
+    ui16Value = (uns16) 0;
     status |= setIntegerParam(addr, PVCamSerialNumRBV, ui16Value);
 
     // PCI FirmwareVersion
@@ -1254,16 +1265,16 @@ const char *availStr[] = {"NO", "YES"};
     printf ("PCI Firmware version available: %s\n", availStr[paramAvail]);
     if (paramAvail)
     {
-        if (!pl_get_param (detectorHandle, PARAM_SERIAL_NUM, ATTR_CURRENT, (void *) &ui16Value)) {
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SERIAL_NUM, ATTR_CURRENT)");
+        if (!pl_get_param (detectorHandle, PARAM_PCI_FW_VERSION, ATTR_CURRENT, (void *) &ui16Value)) {
+            outputErrorMessage (functionName, "pl_get_param (PARAM_PCI_FW_VERSION, ATTR_CURRENT)");
         }
-        printf("Serial Number %d\n", ui16Value);
+        printf("PARAM_PCI_FW_VERSION %d\n", ui16Value);
     }
     else {
         ui16Value = (uns16)0;
 
     }
-    status |= setIntegerParam(addr, PVCamSerialNumRBV, ui16Value);
+    status |= setIntegerParam(addr, PVCamCamFirmwareVersRBV, ui16Value);
 
 
 
@@ -1347,6 +1358,7 @@ void pvCam::initializeDetector (void)
         tempAvailable = true;
     }
 
+/*
     //Trigger
     if (!pl_get_param(detectorHandle, PARAM_EDGE_TRIGGER, ATTR_AVAIL, (void *) &paramAvail))
         outputErrorMessage (functionName, "pl_get_param(PARAM_EDGE_TRIGGER, ATTR_AVAIL)");
@@ -1370,7 +1382,7 @@ void pvCam::initializeDetector (void)
 //        if (!pl_set_param(camera_handle, PARAM_LOGIC_OUTPUT, (void *) &int16Parm))
 //            outputErrorMessage (functionName, "pl_set_param(PARAM_LOGIC_OUTPUT)");
     }
-
+*/
 
     //pre/post shutter compensation
     if (!pl_get_param(detectorHandle, PARAM_SHTR_OPEN_DELAY, ATTR_AVAIL, (void *) &paramAvail))
