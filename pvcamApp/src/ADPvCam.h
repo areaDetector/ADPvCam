@@ -217,7 +217,7 @@ char            *detectorList[5];
 
 unsigned short  *rawData;
 
-    void outputErrorMessage (const char *functionName, const char *appMessage);
+    void reportPvCamError (const char *functionName, const char *appMessage);
 
     void initializeDetectorInterface (void);
     void selectDetector (int selectedDetector);

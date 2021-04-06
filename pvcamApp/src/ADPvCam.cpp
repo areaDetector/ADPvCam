@@ -10,6 +10,24 @@
 
 #include "ADPvCam.h"
 
+
+
+// Error message formatters
+#define ERR(msg) asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s::%s: %s\n", \
+    driverName, functionName, msg)
+
+#define ERR_ARGS(fmt,...) asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, \
+    "%s::%s: " fmt "\n", driverName, functionName, __VA_ARGS__);
+
+// Flow message formatters
+#define LOG(msg) asynPrint(pasynUserSelf, ASYN_TRACE_FLOW, "%s::%s: %s\n", \
+    driverName, functionName, msg)
+
+#define LOG_ARGS(fmt,...) asynPrint(pasynUserSelf, ASYN_TRACE_FLOW, \
+    "%s::%s: " fmt "\n", driverName, functionName, __VA_ARGS__);
+
+
+
 //_____________________________________________________________________________________________
 
 extern "C" int ADPvCamConfig(const char *portName, int maxSizeX, int maxSizeY, int dataType,
@@ -46,9 +64,8 @@ static void pvCamMonitorTaskC(void *drvPvt)
 ADPvCam::ADPvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t dataType, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, NUM_PVCAM_PARAMS, maxBuffers, maxMemory, 0, 0, 0, 1, priority, stackSize), imagesRemaining(0), pRaw(NULL)
 {
-    const char *functionName = "ADPvCam::pvCam()";
+    const char *functionName = "ADPvCam";
     int status = asynSuccess;
-    int addr=0;
     size_t dims[2];
 
     //init some variables
@@ -115,15 +132,16 @@ ADPvCam::ADPvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t 
 
     /* Create the epicsEvents for signaling to the simulate task when acquisition starts and stops */
     this->startEventId = epicsEventCreate(epicsEventEmpty);
-    if (!this->startEventId) {
-        printf("%s:%s epicsEventCreate failure for start event\n",
-            driverName, functionName);
+    if (!this->startEventId)
+    {
+        ERR("epicsEventCreate failure for start event");
         return;
     }
+    
     this->stopEventId = epicsEventCreate(epicsEventEmpty);
-    if (!this->stopEventId) {
-        printf("%s:%s epicsEventCreate failure for stop event\n",
-            driverName, functionName);
+    if (!this->stopEventId)
+    {
+        ERR("epicsEventCreate failure for stop event");
         return;
     }
 
@@ -134,39 +152,40 @@ ADPvCam::ADPvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t 
 
     if (!pl_pvcam_init ())
     {
-        outputErrorMessage (functionName, "pl_cam_get_name");
+        reportPvCamError(functionName, "pl_pvcam_init");
         exit (1);
     }
 
     /* Set some default values for parameters */
-    status =  setStringParam (addr, ADManufacturer, "PI/Acton");
-    status |= setStringParam (addr, ADModel, "PVCam Cameras");
-    status |= setIntegerParam(addr, ADMaxSizeX, maxSizeX);
-    status |= setIntegerParam(addr, ADMaxSizeY, maxSizeY);
-    status |= setIntegerParam(addr, ADSizeX, maxSizeX);
-    status |= setIntegerParam(addr, ADSizeX, maxSizeX);
-    status |= setIntegerParam(addr, ADSizeY, maxSizeY);
-    status |= setIntegerParam(addr, NDArraySizeX, maxSizeX);
-    status |= setIntegerParam(addr, NDArraySizeY, maxSizeY);
-    status |= setIntegerParam(addr, NDArraySize, 0);
-    status |= setIntegerParam(addr, NDDataType, dataType);
-    status |= setIntegerParam(addr, ADImageMode, ADImageContinuous);
-    status |= setDoubleParam (addr, ADAcquireTime, .001);
-    status |= setDoubleParam (addr, ADAcquirePeriod, .005);
-    status |= setIntegerParam(addr, ADNumImages, 100);
+    status =  setStringParam (ADManufacturer, "PI/Acton");
+    status |= setStringParam (ADModel, "PVCam Cameras");
+    status |= setIntegerParam(ADMaxSizeX, maxSizeX);
+    status |= setIntegerParam(ADMaxSizeY, maxSizeY);
+    status |= setIntegerParam(ADSizeX, maxSizeX);
+    status |= setIntegerParam(ADSizeX, maxSizeX);
+    status |= setIntegerParam(ADSizeY, maxSizeY);
+    status |= setIntegerParam(NDArraySizeX, maxSizeX);
+    status |= setIntegerParam(NDArraySizeY, maxSizeY);
+    status |= setIntegerParam(NDArraySize, 0);
+    status |= setIntegerParam(NDDataType, dataType);
+    status |= setIntegerParam(ADImageMode, ADImageContinuous);
+    status |= setDoubleParam (ADAcquireTime, .001);
+    status |= setDoubleParam (ADAcquirePeriod, .005);
+    status |= setIntegerParam(ADNumImages, 100);
 
-//    status |= setIntegerParam(addr, PVCamGainIndex, 11);
-//    status |= setIntegerParam(addr, PVCamGainIndexRBV, 11);
+//    status |= setIntegerParam(PVCamGainIndex, 11);
+//    status |= setIntegerParam(PVCamGainIndexRBV, 11);
 
-    status |= setStringParam(addr, PVCamCamFirmwareVersRBV, "Unknown");
-    status |= setStringParam(addr, PVCamHeadSerialNumRBV, "Unknown");
-    status |= setStringParam(addr, PVCamPVCamVersRBV, "Unknown");
-    status |= setStringParam(addr, PVCamDevDrvVersRBV, "Unknown");
-    status |= setIntegerParam(addr, PVCamPCIFWVersRBV, -1);
-    status |= setIntegerParam(addr, PVCamSerialNumRBV, -1);
+    status |= setStringParam(PVCamCamFirmwareVersRBV, "Unknown");
+    status |= setStringParam(PVCamHeadSerialNumRBV, "Unknown");
+    status |= setStringParam(PVCamPVCamVersRBV, "Unknown");
+    status |= setStringParam(PVCamDevDrvVersRBV, "Unknown");
+    status |= setIntegerParam(PVCamPCIFWVersRBV, -1);
+    status |= setIntegerParam(PVCamSerialNumRBV, -1);
 
-    if (status) {
-        printf("%s: unable to set camera parameters\n", functionName);
+    if (status)
+    {
+        ERR("unable to set camera parameters");
         return;
     }
 
@@ -183,9 +202,10 @@ ADPvCam::ADPvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t 
                                 epicsThreadGetStackSize(epicsThreadStackMedium),
                                 (EPICSTHREADFUNC)pvCamAcquisitionTaskC,
                                 this) == NULL);
-    if (status) {
-        printf("%s:%s epicsThreadCreate failure for acquisition task\n",
-            driverName, functionName);
+    
+    if (status)
+    {
+        ERR("epicsThreadCreate failure for acquisition task");
         return;
     }
 
@@ -195,9 +215,10 @@ ADPvCam::ADPvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t 
                                 epicsThreadGetStackSize(epicsThreadStackMedium),
                                 (EPICSTHREADFUNC)pvCamMonitorTaskC,
                                 this) == NULL);
-    if (status) {
-        printf("%s:%s epicsThreadCreate failure for monitor task\n",
-            driverName, functionName);
+    
+    if (status)
+    {
+        ERR("epicsThreadCreate failure for monitor task");
         return;
     }
 
@@ -207,19 +228,23 @@ ADPvCam::ADPvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t 
 
 template <typename epicsType> int ADPvCam::computeArray(int maxSizeX, int maxSizeY)
 {
-epicsType *pData = (epicsType *)this->pRaw->pData;
-int addr=0;
-int status = asynSuccess;
-int    sizeX, sizeY;
+    epicsType *pData = (epicsType *)this->pRaw->pData;
+    int status = asynSuccess;
+    int sizeX, sizeY;
 
-    status |= getIntegerParam(addr, ADSizeX,            &sizeX);
-    status |= getIntegerParam(addr, ADSizeY,            &sizeY);
+    status |= getIntegerParam(ADSizeX, &sizeX);
+    status |= getIntegerParam(ADSizeY, &sizeY);
 
     for (int loopy=0; loopy<sizeY; loopy++)
+    {
         for (int loopx=0; loopx<sizeX; loopx++)
-            (*pData++) = (epicsType)rawData[(loopy*sizeX)+loopx];
+        {
+            (*pData++) = (epicsType) rawData[(loopy*sizeX)+loopx];
+        }
+    }
+        
 
-    return(status);
+    return status;
 }
 
 //_____________________________________________________________________________________________
@@ -232,13 +257,16 @@ int ADPvCam::allocateBuffer()
     /* Make sure the raw array we have allocated is large enough.
      * We are allowed to change its size because we have exclusive use of it */
     this->pRaw->getInfo(&arrayInfo);
-    if (arrayInfo.totalBytes > this->pRaw->dataSize) {
+    
+    if (arrayInfo.totalBytes > this->pRaw->dataSize)
+    {
         free(this->pRaw->pData);
         this->pRaw->pData  = malloc(arrayInfo.totalBytes);
         this->pRaw->dataSize = arrayInfo.totalBytes;
         if (!this->pRaw->pData) status = asynError;
     }
-    return(status);
+    
+    return status;
 }
 
 //_____________________________________________________________________________________________
@@ -247,7 +275,6 @@ int ADPvCam::computeImage()
 {
     int status = asynSuccess;
     NDDataType_t dataType;
-    int addr=0;
     int binX, binY, minX, minY, sizeX, sizeY, reverseX, reverseY;
     int maxSizeX, maxSizeY;
     NDDimension_t dimsOut[2];
@@ -257,65 +284,73 @@ int ADPvCam::computeImage()
 
     /* NOTE: The caller of this function must have taken the mutex */
 
-    status |= getIntegerParam(addr, ADBinX,         &binX);
-    status |= getIntegerParam(addr, ADBinY,         &binY);
-    status |= getIntegerParam(addr, ADMinX,         &minX);
-    status |= getIntegerParam(addr, ADMinY,         &minY);
-    status |= getIntegerParam(addr, ADSizeX,        &sizeX);
-    status |= getIntegerParam(addr, ADSizeY,        &sizeY);
-    status |= getIntegerParam(addr, ADReverseX,     &reverseX);
-    status |= getIntegerParam(addr, ADReverseY,     &reverseY);
-    status |= getIntegerParam(addr, ADMaxSizeX,     &maxSizeX);
-    status |= getIntegerParam(addr, ADMaxSizeY,     &maxSizeY);
-    status |= getIntegerParam(addr, NDDataType,     (int *)&dataType);
-    if (status) asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                    "%s:%s: error getting parameters\n",
-                    driverName, functionName);
+    status |= getIntegerParam(ADBinX,         &binX);
+    status |= getIntegerParam(ADBinY,         &binY);
+    status |= getIntegerParam(ADMinX,         &minX);
+    status |= getIntegerParam(ADMinY,         &minY);
+    status |= getIntegerParam(ADSizeX,        &sizeX);
+    status |= getIntegerParam(ADSizeY,        &sizeY);
+    status |= getIntegerParam(ADReverseX,     &reverseX);
+    status |= getIntegerParam(ADReverseY,     &reverseY);
+    status |= getIntegerParam(ADMaxSizeX,     &maxSizeX);
+    status |= getIntegerParam(ADMaxSizeY,     &maxSizeY);
+    status |= getIntegerParam(NDDataType,     (int *)&dataType);
+    
+    if (status) ERR("getting parameters");
 
     /* Make sure parameters are consistent, fix them if they are not */
-    if (binX < 1) {
+    if (binX < 1)
+    {
         binX = 1;
-        status |= setIntegerParam(addr, ADBinX, binX);
+        status |= setIntegerParam(ADBinX, binX);
     }
-    if (binY < 1) {
+    if (binY < 1)
+    {
         binY = 1;
-        status |= setIntegerParam(addr, ADBinY, binY);
+        status |= setIntegerParam(ADBinY, binY);
     }
-    if (minX < 0) {
+    if (minX < 0)
+    {
         minX = 0;
-        status |= setIntegerParam(addr, ADMinX, minX);
+        status |= setIntegerParam(ADMinX, minX);
     }
-    if (minY < 0) {
+    if (minY < 0)
+    {
         minY = 0;
-        status |= setIntegerParam(addr, ADMinY, minY);
+        status |= setIntegerParam(ADMinY, minY);
     }
-    if (minX > maxSizeX-1) {
+    if (minX > maxSizeX-1)
+    {
         minX = maxSizeX-1;
-        status |= setIntegerParam(addr, ADMinX, minX);
+        status |= setIntegerParam(ADMinX, minX);
     }
-    if (minY > maxSizeY-1) {
+    if (minY > maxSizeY-1)
+    {
         minY = maxSizeY-1;
-        status |= setIntegerParam(addr, ADMinY, minY);
+        status |= setIntegerParam(ADMinY, minY);
     }
-    if (minX+sizeX > maxSizeX) {
+    if (minX+sizeX > maxSizeX)
+    {
         sizeX = maxSizeX-minX;
-        status |= setIntegerParam(addr, ADSizeX, sizeX);
+        status |= setIntegerParam(ADSizeX, sizeX);
     }
-    if (minY+sizeY > maxSizeY) {
+    if (minY+sizeY > maxSizeY)
+    {
         sizeY = maxSizeY-minY;
-        status |= setIntegerParam(addr, ADSizeY, sizeY);
+        status |= setIntegerParam(ADSizeY, sizeY);
     }
 
     /* Make sure the buffer we have allocated is large enough. */
     this->pRaw->dataType = dataType;
     status = allocateBuffer();
-    if (status) {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                  "%s:%s: error allocating raw buffer\n",
-                  driverName, functionName);
-        return(status);
+    if (status)
+    {
+        ERR("error allocating raw buffer");
+        return status;
     }
-    switch (dataType) {
+    
+    switch (dataType)
+    {
         case NDInt8:
             status |= computeArray<epicsInt8>(maxSizeX, maxSizeY);
             break;
@@ -349,35 +384,37 @@ int ADPvCam::computeImage()
     dimsOut[0].binning = binX;
     dimsOut[0].offset = minX;
     dimsOut[0].reverse = reverseX;
+    
     this->pRaw->initDimension(&dimsOut[1], sizeY);
     dimsOut[1].binning = binY;
     dimsOut[1].offset = minY;
     dimsOut[1].reverse = reverseY;
+    
     /* We save the most recent image buffer so it can be used in the read() function.
      * Now release it before getting a new version. */
-    if (this->pArrays[addr])
-        this->pArrays[addr]->release();
+    if (this->pArrays[0])
+        this->pArrays[0]->release();
+    
     status = this->pNDArrayPool->convert(this->pRaw,
-                                         &this->pArrays[addr],
+                                         &this->pArrays[0],
                                          dataType,
                                          dimsOut);
-    if (status) {
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                    "%s:%s: error allocating buffer in convert()\n",
-                    driverName, functionName);
+    if (status)
+    {
+        ERR("error allocating buffer in convert()");
         return(status);
     }
-    pImage = this->pArrays[addr];
+    
+    pImage = this->pArrays[0];
     pImage->getInfo(&arrayInfo);
+    
     status = asynSuccess;
-    status |= setIntegerParam(addr, NDArraySize,  arrayInfo.totalBytes);
-    status |= setIntegerParam(addr, NDArraySizeX, pImage->dims[0].size);
-    status |= setIntegerParam(addr, NDArraySizeY, pImage->dims[1].size);
+    status |= setIntegerParam(NDArraySize,  arrayInfo.totalBytes);
+    status |= setIntegerParam(NDArraySizeX, pImage->dims[0].size);
+    status |= setIntegerParam(NDArraySizeY, pImage->dims[1].size);
 
-    if (status) asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
-                    "%s:%s: error setting parameters\n",
-                    driverName, functionName);
-    return(status);
+    if (status) ERR("error setting parameters");
+    return status;
 }
 
 //_____________________________________________________________________________________________
@@ -385,10 +422,9 @@ int ADPvCam::computeImage()
 /* This thread computes new image data and does the callbacks to send it to higher layers */
 void ADPvCam::pvCamAcquisitionTask()
 {
-    const char *functionName = "ADPvCam::pvCamAcquisitionTask()";
+    const char *functionName = "pvCamAcquisitionTask()";
     int status = asynSuccess;
     int dataType;
-    int addr=0;
     int imageSizeX, imageSizeY, imageSize;
     int imageCounter;
     int acquire, autoSave;
@@ -405,17 +441,16 @@ void ADPvCam::pvCamAcquisitionTask()
     {
         abort = 0;
         /* Is acquisition active? */
-        getIntegerParam(addr, ADAcquire, &acquire);
+        getIntegerParam(ADAcquire, &acquire);
 
         /* If we are not acquiring then wait for a semaphore that is given when acquisition is started */
         if (!acquire)
         {
-            setIntegerParam(addr, ADStatus, ADStatusIdle);
-            callParamCallbacks(addr, addr);
+            setIntegerParam(ADStatus, ADStatusIdle);
+            callParamCallbacks();
             /* Release the lock while we wait for an event that says acquire has started, then lock again */
             this->unlock();
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                "%s:%s: waiting for acquire to start\n", driverName, functionName);
+            LOG("waiting for acquire to start");
             status = epicsEventWait(this->startEventId);
             this->lock();
         }
@@ -425,17 +460,17 @@ void ADPvCam::pvCamAcquisitionTask()
         epicsTimeGetCurrent(&startTime);
 
         /* Get the exposure parameters */
-        getDoubleParam(addr, ADAcquireTime, &acquireTime);
-        getDoubleParam(addr, ADAcquirePeriod, &acquirePeriod);
+        getDoubleParam(ADAcquireTime, &acquireTime);
+        getDoubleParam(ADAcquirePeriod, &acquirePeriod);
 
-        setIntegerParam(addr, ADStatus, ADStatusAcquire);
+        setIntegerParam(ADStatus, ADStatusAcquire);
 
         /* Call the callbacks to update any changes */
-        callParamCallbacks(addr, addr);
+        callParamCallbacks();
 
         //Acquire Image Start
         if (!pl_exp_start_seq (detectorHandle, rawData))
-            outputErrorMessage (functionName, "pl_exp_start_seq");
+            reportPvCamError(functionName, "pl_exp_start_seq");
 
         /* Wait for acquisition to complete, but allow acquire stop events to be handled */
         while (1)
@@ -447,15 +482,15 @@ void ADPvCam::pvCamAcquisitionTask()
             if (status == epicsEventWaitOK)
             {
                 /* We got a stop event, abort acquisition */
-                printf ("Got a stop event from somewhere...\n");
+                printf("Got a stop event from somewhere...\n");
 
                 if (!pl_exp_abort (detectorHandle, CCS_HALT))
-                    outputErrorMessage (functionName, "pl_exp_abort");
+                    reportPvCamError(functionName, "pl_exp_abort");
 
                 acquire = 0;
                 abort = 1;
-                setIntegerParam(addr, ADStatus, ADStatusReadout);
-                callParamCallbacks(addr, addr);
+                setIntegerParam(ADStatus, ADStatusReadout);
+                callParamCallbacks();
                 break;
             }
             else
@@ -463,33 +498,32 @@ void ADPvCam::pvCamAcquisitionTask()
 
             if (acquire)
             {
-                printf ("Got 1!!!\n");
+                //printf ("Got 1!!!\n");
                 break;
             }
         }
         //Acquire Image End
 
         if (abort) continue;
+        
         /* Update the image */
         status = computeImage();
-        if (status) {
-            continue;
-        }
+        if (status) continue;
 
-        pImage = this->pArrays[addr];
+        pImage = this->pArrays[0];
 
         epicsTimeGetCurrent(&endTime);
         elapsedTime = epicsTimeDiffInSeconds(&endTime, &startTime);
 
         /* Get the current parameters */
-        getIntegerParam(addr, NDArraySizeX, &imageSizeX);
-        getIntegerParam(addr, NDArraySizeY, &imageSizeY);
-        getIntegerParam(addr, NDArraySize,  &imageSize);
-        getIntegerParam(addr, NDDataType,   &dataType);
-        getIntegerParam(addr, NDAutoSave,   &autoSave);
-        getIntegerParam(addr, NDArrayCounter, &imageCounter);
+        getIntegerParam(NDArraySizeX, &imageSizeX);
+        getIntegerParam(NDArraySizeY, &imageSizeY);
+        getIntegerParam(NDArraySize,  &imageSize);
+        getIntegerParam(NDDataType,   &dataType);
+        getIntegerParam(NDAutoSave,   &autoSave);
+        getIntegerParam(NDArrayCounter, &imageCounter);
         imageCounter++;
-        setIntegerParam(addr, NDArrayCounter, imageCounter);
+        setIntegerParam(NDArrayCounter, imageCounter);
 
         /* Put the frame number and time stamp into the buffer */
         pImage->uniqueId = imageCounter;
@@ -497,9 +531,8 @@ void ADPvCam::pvCamAcquisitionTask()
         updateTimeStamp(&pImage->epicsTS);
 
         /* Call the NDArray callback */
-        asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-             "%s:%s: calling imageData callback\n", driverName, functionName);
-        doCallbacksGenericPointer(pImage, NDArrayData, addr);
+        LOG("calling imageData callback");
+        doCallbacksGenericPointer(pImage, NDArrayData, 0);
 
         /* See if acquisition is done */
         if (this->imagesRemaining > 0)
@@ -507,24 +540,21 @@ void ADPvCam::pvCamAcquisitionTask()
 
         if (this->imagesRemaining == 0)
         {
-            setIntegerParam(addr, ADAcquire, ADStatusIdle);
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                  "%s:%s: acquisition completed\n", driverName, functionName);
+            setIntegerParam(ADAcquire, ADStatusIdle);
+            LOG("acquisition completed");
         }
 
         /* Call the callbacks to update any changes */
-        callParamCallbacks(addr, addr);
+        callParamCallbacks();
 
         /* If we are acquiring then sleep for the acquire period minus elapsed time. */
         if (acquire)
         {
             /* We set the status to readOut to indicate we are in the period delay */
-            setIntegerParam(addr, ADStatus, ADStatusReadout);
-            callParamCallbacks(addr, addr);
+            setIntegerParam(ADStatus, ADStatusReadout);
+            callParamCallbacks();
             delay = acquirePeriod - elapsedTime;
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                     "%s:%s: delay=%f\n",
-                      driverName, functionName, delay);
+            LOG_ARGS("delay=%f", delay);
             if (delay >= epicsThreadSleepQuantum())
                 status = epicsEventWaitWithTimeout(this->stopEventId, delay);
 
@@ -537,10 +567,9 @@ void ADPvCam::pvCamAcquisitionTask()
 /* This thread computes new image data and does the callbacks to send it to higher layers */
 void ADPvCam::pvCamMonitorTask()
 {
-    const char *functionName = "ADPvCam::pvCamTask()";
+    const char *functionName = "pvCamMonitorTask";
     int status = asynSuccess;
-    int addr=0,
-        acquire;
+    int acquire=0;
     int16 i16Value;
     double measuredTemperature;
 
@@ -553,19 +582,19 @@ void ADPvCam::pvCamMonitorTask()
         this->lock();
 
         /* Are we idle? */
-        getIntegerParam(addr, ADAcquire, &acquire);
+        getIntegerParam(ADAcquire, &acquire);
 
         /* If we are not acquiring then check the temperature */
         if (acquire == ADStatusIdle)
         {
             if (tempAvailable ) {
                 if (!pl_get_param (detectorHandle, PARAM_TEMP, ATTR_CURRENT, (void *) &i16Value))
-                    outputErrorMessage (functionName, "pl_get_param (PARAM_TEMP, ATTR_CURRENT)");
+                    reportPvCamError (functionName, "pl_get_param (PARAM_TEMP, ATTR_CURRENT)");
 
                 measuredTemperature = (double) i16Value / 100.0;
-                status |= setDoubleParam(addr, PVCamMeasuredTemperatureRBV, measuredTemperature);
+                status |= setDoubleParam(PVCamMeasuredTemperatureRBV, measuredTemperature);
             }
-            callParamCallbacks(addr, addr);
+            callParamCallbacks();
         }
     }
 }
@@ -574,43 +603,47 @@ void ADPvCam::pvCamMonitorTask()
 
 asynStatus ADPvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
-    //const char *functionName = "ADPvCam::writeInt32()";
+    const char *functionName = "writeInt32";
     int function = pasynUser->reason;
     int adstatus;
-    int addr=0;
-    int status = 0;
+    asynStatus status = asynSuccess;
 
     /* Set the parameter and readback in the parameter library.  This may be overwritten when we read back the
      * status at the end, but that's OK */
-    status = setIntegerParam(addr, function, value);
+    status = setIntegerParam(function, value);
 
     /* For a real detector this is where the parameter is sent to the hardware */
-    if (function == ADAcquire) {
-        getIntegerParam(addr, ADStatus, &adstatus);
+    if (function == ADAcquire)
+    {
+        getIntegerParam(ADStatus, &adstatus);
         if (value && (adstatus == ADStatusIdle))
         {
+            
             /* We need to set the number of images we expect to collect, so the image callback function
                can know when acquisition is complete.  We need to find out what mode we are in and how
                many images have been requested.  If we are in continuous mode then set the number of
                remaining images to -1. */
             int imageMode, numImages;
-            status = getIntegerParam(addr, ADImageMode, &imageMode);
-            status = getIntegerParam(addr, ADNumImages, &numImages);
-            switch(imageMode) {
-            case ADImageSingle:
-                this->imagesRemaining = 1;
-                break;
-            case ADImageMultiple:
-                this->imagesRemaining = numImages;
-                break;
-            case ADImageContinuous:
-                this->imagesRemaining = -1;
-                break;
+            status = getIntegerParam(ADImageMode, &imageMode);
+            status = getIntegerParam(ADNumImages, &numImages);
+            switch(imageMode)
+            {
+                case ADImageSingle:
+                    this->imagesRemaining = 1;
+                    break;
+                case ADImageMultiple:
+                    this->imagesRemaining = numImages;
+                    break;
+                case ADImageContinuous:
+                    this->imagesRemaining = -1;
+                    break;
             }
+            
             /* Send an event to wake up the simulation task.
              * It won't actually start generating new images until we release the lock below */
             epicsEventSignal(this->startEventId);
         }
+        
         if (!value && (adstatus != ADStatusIdle))
         {
             /* This was a command to stop acquisition */
@@ -622,84 +655,80 @@ asynStatus ADPvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
          * set the images remaining appropriately. */
         switch (value)
         {
-            case ADImageSingle: this->imagesRemaining = 1; break;
-
-            case ADImageMultiple: {
+            case ADImageSingle: 
+                this->imagesRemaining = 1;
+                break;
+            case ADImageMultiple:
                 int numImages;
-                getIntegerParam(addr, ADNumImages, &numImages);
+                getIntegerParam(ADNumImages, &numImages);
                 this->imagesRemaining = numImages;
                 break;
-             }
-
-            case ADImageContinuous: this->imagesRemaining = -1; break;
+            case ADImageContinuous:
+                this->imagesRemaining = -1;
+                break;
         }
     } else if (function == PVCamInitDetector) {
-        initializeDetector ();
+        initializeDetector();
     }
 
     /* Do callbacks so higher layers see any changes */
-    callParamCallbacks(addr, addr);
+    callParamCallbacks();
 
     if (status)
-        asynPrint(pasynUser, ASYN_TRACE_ERROR,
-              "%s:writeInt32 error, status=%d function=%d, value=%d\n",
-              driverName, status, function, value);
+        ERR_ARGS("error, status=%d function=%d, value=%d", status, function, value);
     else
-        asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
-              "%s:writeInt32: function=%d, value=%d\n",
-              driverName, function, value);
+        LOG_ARGS("function=%d, value=%d", function, value);
 
-    return ((asynStatus) status);
+    return status;
 }
 
 //_____________________________________________________________________________________________
 
 asynStatus ADPvCam::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
-    //const char *functionName = "ADPvCam::writeFloat64()";
+    const char *functionName = "writeFloat64";
     int function = pasynUser->reason;
-    int status = 0;
-    int addr=0;
+    asynStatus status = asynSuccess;
 
     /* Set the parameter and readback in the parameter library.  This may be overwritten when we read back the
      * status at the end, but that's OK */
-    status = setDoubleParam(addr, function, value);
+    status = setDoubleParam(function, value);
 
     /* Changing any of the following parameters requires recomputing the base image */
-    if (function == ADAcquireTime) {
-            printf ("Setting proposed exposure time to %e\n", value);
-
-            status |= setDoubleParam(addr, ADAcquireTime, value);
+    if (function == ADAcquireTime)
+    {
+        LOG_ARGS("Setting proposed exposure time to %e", value);
+        status |= setDoubleParam(ADAcquireTime, value);
     }
 
     /* Do callbacks so higher layers see any changes */
-    callParamCallbacks(addr, addr);
+    callParamCallbacks();
     if (status)
-        asynPrint(pasynUser, ASYN_TRACE_ERROR,
-              "%s:writeFloat64 error, status=%d function=%d, value=%f\n",
-              driverName, status, function, value);
+        ERR_ARGS("error, status=%d function=%d, value=%f", status, function, value);
     else
-        asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
-              "%s:writeFloat64: function=%d, value=%f\n",
-              driverName, function, value);
-    return ((asynStatus) status);
+        LOG_ARGS("function=%d, value=%f", function, value);
+    
+    return (asynStatus) status;
 }
 
 //_____________________________________________________________________________________________
 
 void ADPvCam::report(FILE *fp, int details)
 {
-    int addr=0;
+
+    const char* functionName = "report";
 
     fprintf(fp, "PVCam %s\n", this->portName);
-    if (details > 0) {
+    if (details > 0)
+    {
         int nx, ny, dataType;
-        getIntegerParam(addr, ADSizeX, &nx);
-        getIntegerParam(addr, ADSizeY, &ny);
-        getIntegerParam(addr, NDDataType, &dataType);
+        getIntegerParam(ADSizeX, &nx);
+        getIntegerParam(ADSizeY, &ny);
+        getIntegerParam(NDDataType, &dataType);
         fprintf(fp, "  NX, NY:            %d  %d\n", nx, ny);
         fprintf(fp, "  Data type:         %d\n", dataType);
     }
+
     /* Invoke the base class method */
     ADDriver::report(fp, details);
 }
@@ -708,19 +737,19 @@ void ADPvCam::report(FILE *fp, int details)
 
 ADPvCam::~ADPvCam()
 {
-const char         *functionName = "~ADPvCam";
+    const char *functionName = "~ADPvCam";
 
     if (rawData != NULL)
         free (rawData);
 
     //if (!pl_exp_uninit_seq())
-    //    outputErrorMessage (functionName, "pl_exp_uninit_seq ()");
+    //    reportPvCamError (functionName, "pl_exp_uninit_seq ()");
 
     if (!pl_cam_close (detectorHandle))
-        outputErrorMessage (functionName, "pl_cam_close ()");
+        reportPvCamError(functionName, "pl_cam_close");
 
     if (!pl_pvcam_uninit ())
-        outputErrorMessage (functionName, "pl_pvcam_uninit ()");
+        reportPvCamError(functionName, "pl_pvcam_uninit");
 
 }
 
@@ -731,27 +760,25 @@ const char         *functionName = "~ADPvCam";
 //_____________________________________________________________________________________________
 
 
-void ADPvCam::outputErrorMessage (const char *functionName, const char *appMessage)
+void ADPvCam::reportPvCamError(const char *functionName, const char *appMessage)
 {
-int16    errorCode;
-char    errorMessage[256];
+    int16 errorCode;
+    char errorMessage[256];
 
-        errorCode = pl_error_code ();
-        pl_error_message (errorCode, errorMessage);
-        printf ("ERROR in %s->%s: errorCode %d -- %s\n", functionName, appMessage, errorCode, errorMessage);
+    errorCode = pl_error_code();
+    pl_error_message(errorCode, errorMessage);
+    printf("ERROR in %s->%s: errorCode %d -- %s\n", functionName, appMessage, errorCode, errorMessage);
 }
 
 //_____________________________________________________________________________________________
 
-void ADPvCam::initializeDetectorInterface (void)
+void ADPvCam::initializeDetectorInterface(void)
 {
-const char      *functionName   = "ADPvCam::initializeDetectorInterface ()";
-int             status          =    asynSuccess;
-int             addr            =    0;
+    const char *functionName = "initializeDetectorInterface";
+    int status = asynSuccess;
+    printf("\n\n\nInitialize detector interface...\n");
 
-    printf ("\n\n\nInitialize detector interface...\n");
-
-    for (int loop=0;loop<MAX_DETECTORS_SUPPORTED;loop++)
+    for (int loop = 0;loop<MAX_DETECTORS_SUPPORTED;loop++)
         detectorList[loop] = NULL;
 
     for (int loop=0;loop<MAX_DETECTORS_SUPPORTED;loop++)
@@ -767,12 +794,12 @@ int             addr            =    0;
     }
 
     if (!pl_cam_get_total (&numDetectorsInstalled))
-        outputErrorMessage (functionName, "pl_cam_get_total");
+        reportPvCamError (functionName, "pl_cam_get_total");
 
     if (numDetectorsInstalled > MAX_DETECTORS_SUPPORTED)
         numDetectorsInstalled = MAX_DETECTORS_SUPPORTED;
 
-    printf ("%d detectors installed...\n", numDetectorsInstalled);
+    printf("%d detectors installed...\n", numDetectorsInstalled);
     for (int loop=0;loop<numDetectorsInstalled;loop++)
     {
         if (detectorList[loop] != NULL)
@@ -780,39 +807,41 @@ int             addr            =    0;
             free (detectorList[loop]);
             detectorList[loop] = NULL;
         }
+        
         detectorList[loop] = (char *) malloc(50);
 
         if (!pl_cam_get_name (loop, detectorList[loop]))
-            outputErrorMessage (functionName, "pl_cam_get_name");
+            reportPvCamError (functionName, "pl_cam_get_name");
+        
         printf ("Detector[%d] = %s\n", loop, detectorList[loop]);
     }
 
 
-    status |= setStringParam(addr, PVCamSlot1Cam, detectorList[0]);
-    status |= setStringParam(addr, PVCamSlot2Cam, detectorList[1]);
-    status |= setStringParam(addr, PVCamSlot3Cam, detectorList[2]);
+    status |= setStringParam(PVCamSlot1Cam, detectorList[0]);
+    status |= setStringParam(PVCamSlot2Cam, detectorList[1]);
+    status |= setStringParam(PVCamSlot3Cam, detectorList[2]);
 
-    if (status) {
-        printf("%s: unable to set camera parameters\n", functionName);
+    if (status)
+    {
+        ERR("unable to set camera parameters");
         return;
     }
 
     /* Call the callbacks to update any changes */
     callParamCallbacks();
 
-    printf ("...interface initialized.\n\n\n\n");
+    printf("...interface initialized.\n\n\n\n");
 
 }
 
 //_____________________________________________________________________________________________
 
-void ADPvCam::selectDetector (int selectedDetector)
+void ADPvCam::selectDetector(int selectedDetector)
 {
-    const char *functionName = "ADPvCam::selectDetector (int selectedDetector)";
+    const char *functionName = "selectDetector";
     int status = asynSuccess;
-    int addr = 0;
 
-    printf ("Selecting detector %d\n", selectedDetector);
+    printf("Selecting detector %d\n", selectedDetector);
 
     if ((selectedDetector <= numDetectorsInstalled) && (selectedDetector > 0))
     {
@@ -821,27 +850,27 @@ void ADPvCam::selectDetector (int selectedDetector)
         if (detectorHandle != 0)
         {
             //if (!pl_exp_uninit_seq())
-            //    outputErrorMessage (functionName, "pl_exp_uninit_seq ()");
+            //    reportPvCamError (functionName, "pl_exp_uninit_seq ()");
 
             if (!pl_cam_close (detectorHandle))
-                outputErrorMessage (functionName, "pl_cam_close ()");
+                reportPvCamError (functionName, "pl_cam_close ()");
         }
 
         //Open camera...
-        printf ("Opening camera %s\n", detectorList[detectorSelected-1]);
+        printf("Opening camera %s\n", detectorList[detectorSelected-1]);
         if (!pl_cam_open (detectorList[detectorSelected-1], &detectorHandle, OPEN_EXCLUSIVE))
-            outputErrorMessage (functionName, "pl_cam_open");
+            reportPvCamError (functionName, "pl_cam_open");
         
         // Depracated in newer SDK versions
         //if (!pl_cam_get_diags (detectorHandle))
-        //    outputErrorMessage (functionName, "pl_cam_get_diags");
+        //    reportPvCamError (functionName, "pl_cam_get_diags");
 
         //if (!pl_exp_init_seq())
-        //    outputErrorMessage (functionName, "pl_cam_init_seq");
+        //    reportPvCamError (functionName, "pl_cam_init_seq");
 
-        status |= setIntegerParam(addr, PVCamDetectorSelected, detectorSelected);
+        status |= setIntegerParam(PVCamDetectorSelected, detectorSelected);
 
-        queryCurrentSettings ();
+        queryCurrentSettings();
     }
 }
 
@@ -849,403 +878,457 @@ void ADPvCam::selectDetector (int selectedDetector)
 
 void ADPvCam::queryCurrentSettings (void)
 {
-    const char      *functionName   = "ADPvCam::queryCurrentSettings ()";
-    int             status          =  asynSuccess;
-    int             addr            =  0;
-    uns16           ui16Value;
-    uns32           ui32Value;
-    int16           i16Value,
-                    parallelSize,
-                    pixelParallelSize,
-                    serialSize,
-                    pixelSerialSize;
-    double          dValue;
-    char            cValue[CCD_NAME_LEN];
-    rs_bool            paramAvail;
+    const char *functionName = "queryCurrentSettings";
+    int status = asynSuccess;
+    int addr = 0;
+    uns16 ui16Value;
+    uns32 ui32Value;
+    int16 i16Value,
+          parallelSize,
+          pixelParallelSize,
+          serialSize,
+          pixelSerialSize;
+    double dValue;
+    char cValue[CCD_NAME_LEN];
+    rs_bool paramAvail;
     const char *availStr[] = {"NO", "YES"};
 
-    printf ("\n\n\nBegin detector ...\n");
+    printf("\n\n\nBegin detector ...\n");
 
 
-    status |= setIntegerParam(addr, PVCamInitDetector, 0);
+    status |= setIntegerParam(PVCamInitDetector, 0);
 
     //Query open camera parameters
-    if (!pl_get_param (detectorHandle, PARAM_CHIP_NAME, ATTR_COUNT, (void *) &ui32Value)) {
-        outputErrorMessage (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_COUNT)");
-    }
-    else {
-        if ( ui32Value <= CCD_NAME_LEN ) {
+    if (!pl_get_param (detectorHandle, PARAM_CHIP_NAME, ATTR_COUNT, (void *) &ui32Value))
+        reportPvCamError (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_COUNT)");
+    else
+    {
+        if ( ui32Value <= CCD_NAME_LEN )
+        {
             if (!pl_get_param (detectorHandle, PARAM_CHIP_NAME, ATTR_CURRENT, (void *) cValue))
-                outputErrorMessage (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_CURRENT)");
-            printf ("Chip name: %s\n", cValue);
-            status |= setStringParam(addr, PVCamChipNameRBV, cValue);
+                reportPvCamError (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_CURRENT)");
+        
+            printf("Chip name: %s\n", cValue);
+            status |= setStringParam(PVCamChipNameRBV, cValue);
         }
-        else {
-                sprintf(cValue, "%s", "unknown");
-                status |= setStringParam(addr, PVCamChipNameRBV, cValue);
-                outputErrorMessage (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_CURRENT)\n");
-                outputErrorMessage (functionName, "Name is too long for storage allotted\n");
-                printf("PARAM_CHIM_NAME ATTR_COUNT = %d, CCD_NAME_LEN = %d\n", (int)ui32Value, CCD_NAME_LEN);
+        else
+        {
+            sprintf(cValue, "%s", "unknown");
+            status |= setStringParam(PVCamChipNameRBV, cValue);
+            reportPvCamError (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_CURRENT)\n");
+            reportPvCamError (functionName, "Name is too long for storage allotted\n");
+            printf("PARAM_CHIP_NAME ATTR_COUNT = %d, CCD_NAME_LEN = %d\n", (int)ui32Value, CCD_NAME_LEN);
         }
     }
 
     //Num pixels
     if (!pl_get_param (detectorHandle, PARAM_PAR_SIZE, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PAR_SIZE, ATTR_CURRENT)");
-    printf ("Parallel size: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamNumParallelPixelsRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_PAR_SIZE, ATTR_CURRENT)");
+    
+    printf("Parallel size: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamNumParallelPixelsRBV, ui16Value);
     parallelSize = ui16Value;
 
     if (!pl_get_param (detectorHandle, PARAM_SER_SIZE, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_SER_SIZE, ATTR_CURRENT)");
-    printf ("Serial size: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamNumSerialPixelsRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_SER_SIZE, ATTR_CURRENT)");
+    
+    printf("Serial size: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamNumSerialPixelsRBV, ui16Value);
     serialSize = ui16Value;
 
 
     //Pixel size
     if (!pl_get_param (detectorHandle, PARAM_PIX_PAR_SIZE, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PIX_PAR_SIZE, ATTR_CURRENT)");
-    printf ("Parallel pixel size: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPixelParallelSizeRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_PIX_PAR_SIZE, ATTR_CURRENT)");
+    
+    printf("Parallel pixel size: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPixelParallelSizeRBV, ui16Value);
     pixelParallelSize = ui16Value;
 
     if (!pl_get_param (detectorHandle, PARAM_PIX_SER_SIZE, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PIX_SER_SIZE, ATTR_CURRENT)");
-    printf ("Serial pixel size: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPixelSerialSizeRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_PIX_SER_SIZE, ATTR_CURRENT)");
+    
+    printf("Serial pixel size: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPixelSerialSizeRBV, ui16Value);
     pixelSerialSize = ui16Value;
 
 
     //Calculated chip dims in mm
     dValue = parallelSize * (pixelParallelSize / 1000.0 / 1000.0);
-    printf ("width: %f\n", dValue);
-    status |= setDoubleParam(addr, PVCamChipWidthMMRBV, dValue);
+    printf("width: %f\n", dValue);
+    status |= setDoubleParam(PVCamChipWidthMMRBV, dValue);
 
     dValue = serialSize * (pixelSerialSize / 1000.0 / 1000.0);
-    printf ("height: %f\n", dValue);
-    status |= setDoubleParam(addr, PVCamChipHeightMMRBV, dValue);
+    printf("height: %f\n", dValue);
+    status |= setDoubleParam(PVCamChipHeightMMRBV, dValue);
 
 
     //Pixel distance
     if (!pl_get_param (detectorHandle, PARAM_PIX_PAR_DIST, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PIX_PAR_DIST, ATTR_CURRENT)");
-    printf ("Parallel pixel dist: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPixelParallelDistRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_PIX_PAR_DIST, ATTR_CURRENT)");
+    
+    printf("Parallel pixel dist: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPixelParallelDistRBV, ui16Value);
 
     if (!pl_get_param (detectorHandle, PARAM_PIX_SER_DIST, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PIX_SER_DIST, ATTR_CURRENT)");
-    printf ("Serial pixel dist: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPixelSerialDistRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_PIX_SER_DIST, ATTR_CURRENT)");
+    
+    printf("Serial pixel dist: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPixelSerialDistRBV, ui16Value);
 
 
     //Pre/PostMask
     if (!pl_get_param (detectorHandle, PARAM_POSTMASK, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_POSTMASK, ATTR_CURRENT)");
-    printf ("postmask: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPostMaskRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_POSTMASK, ATTR_CURRENT)");
+    
+    printf("postmask: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPostMaskRBV, ui16Value);
 
     if (!pl_get_param (detectorHandle, PARAM_PREMASK, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PREMASK, ATTR_CURRENT)");
-    printf ("premask: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPreMaskRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_PREMASK, ATTR_CURRENT)");
+    
+    printf("premask: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPreMaskRBV, ui16Value);
 
 
     //Pre/PostScan
     if (!pl_get_param (detectorHandle, PARAM_POSTSCAN, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_POSTSCAN, ATTR_CURRENT)");
-    printf ("postscan: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPostScanRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_POSTSCAN, ATTR_CURRENT)");
+    
+    printf("postscan: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPostScanRBV, ui16Value);
 
     if (!pl_get_param (detectorHandle, PARAM_PRESCAN, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PRESCAN, ATTR_CURRENT)");
-    printf ("prescan: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPreScanRBV, ui16Value);
+        reportPvCamError (functionName, "pl_get_param (PARAM_PRESCAN, ATTR_CURRENT)");
+    
+    printf("prescan: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPreScanRBV, ui16Value);
 
 
     //pre/post shutter compensation
     if (!pl_get_param(detectorHandle, PARAM_SHTR_OPEN_DELAY, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_SHTR_OPEN_DELAY, ATTR_AVAIL)");
-    printf ("Open Shutter delay available: %s\n", availStr[paramAvail]);
+        reportPvCamError (functionName, "pl_get_param(PARAM_SHTR_OPEN_DELAY, ATTR_AVAIL)");
+    
+    printf("Open Shutter delay available: %s\n", availStr[paramAvail]);
+    
     if (paramAvail)
     {
         if (!pl_get_param (detectorHandle, PARAM_SHTR_OPEN_DELAY, ATTR_MIN, (void *) &ui16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY, ATTR_MIN)");
-        printf ("Min shutter open delay: %d\n", ui16Value);
-        status |= setIntegerParam(addr, PVCamMinShutterOpenDelayRBV, ui16Value);
+            reportPvCamError (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY, ATTR_MIN)");
+    
+        printf("Min shutter open delay: %d\n", ui16Value);
+        status |= setIntegerParam(PVCamMinShutterOpenDelayRBV, ui16Value);
 
         if (!pl_get_param (detectorHandle, PARAM_SHTR_OPEN_DELAY, ATTR_MAX, (void *) &ui16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY, ATTR_MAX)");
-        printf ("Max shutter open delay: %d\n", ui16Value);
-        status |= setIntegerParam(addr, PVCamMaxShutterOpenDelayRBV, ui16Value);
+            reportPvCamError (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY, ATTR_MAX)");
+    
+        printf("Max shutter open delay: %d\n", ui16Value);
+        status |= setIntegerParam(PVCamMaxShutterOpenDelayRBV, ui16Value);
 
         if (!pl_get_param (detectorHandle, PARAM_SHTR_OPEN_DELAY, ATTR_CURRENT, (void *) &ui16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY, ATTR_CURRENT)");
-        printf ("Current shutter open delay: %d\n", ui16Value);
-        status |= setIntegerParam(addr, PVCamShutterOpenDelay, ui16Value);
-        status |= setIntegerParam(addr, PVCamShutterOpenDelayRBV, ui16Value);
+            reportPvCamError (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY, ATTR_CURRENT)");
+        printf("Current shutter open delay: %d\n", ui16Value);
+        status |= setIntegerParam(PVCamShutterOpenDelay, ui16Value);
+        status |= setIntegerParam(PVCamShutterOpenDelayRBV, ui16Value);
     }
     else {
         ui16Value = (uns16)0;
-        status |= setIntegerParam(addr, PVCamMinShutterOpenDelayRBV, ui16Value);
-        status |= setIntegerParam(addr, PVCamMaxShutterOpenDelayRBV, ui16Value);
-        status |= setIntegerParam(addr, PVCamShutterOpenDelay, ui16Value);
-        status |= setIntegerParam(addr, PVCamShutterOpenDelayRBV, ui16Value);
+        status |= setIntegerParam(PVCamMinShutterOpenDelayRBV, ui16Value);
+        status |= setIntegerParam(PVCamMaxShutterOpenDelayRBV, ui16Value);
+        status |= setIntegerParam(PVCamShutterOpenDelay, ui16Value);
+        status |= setIntegerParam(PVCamShutterOpenDelayRBV, ui16Value);
     }
 
     if (!pl_get_param(detectorHandle, PARAM_SHTR_CLOSE_DELAY, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_SHTR_CLOSE_DELAY, ATTR_AVAIL)");
-    printf ("Close Shutter delay available: %s\n", availStr[paramAvail]);
+        reportPvCamError (functionName, "pl_get_param(PARAM_SHTR_CLOSE_DELAY, ATTR_AVAIL)");
+    
+    printf("Close Shutter delay available: %s\n", availStr[paramAvail]);
+    
     if (paramAvail)
     {
         if (!pl_get_param (detectorHandle, PARAM_SHTR_CLOSE_DELAY, ATTR_MIN, (void *) &ui16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SHTR_CLOSE_DELAY, ATTR_MIN)");
-        printf ("Min shutter close delay: %d\n", ui16Value);
-        status |= setIntegerParam(addr, PVCamMinShutterCloseDelayRBV, ui16Value);
+            reportPvCamError (functionName, "pl_get_param (PARAM_SHTR_CLOSE_DELAY, ATTR_MIN)");
+        
+        printf("Min shutter close delay: %d\n", ui16Value);
+        status |= setIntegerParam(PVCamMinShutterCloseDelayRBV, ui16Value);
 
         if (!pl_get_param (detectorHandle, PARAM_SHTR_CLOSE_DELAY, ATTR_MAX, (void *) &ui16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY, ATTR_MAX)");
-        printf ("Max shutter close delay: %d\n", ui16Value);
-        status |= setIntegerParam(addr, PVCamMaxShutterCloseDelayRBV, ui16Value);
+            reportPvCamError (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY, ATTR_MAX)");
+        
+        printf("Max shutter close delay: %d\n", ui16Value);
+        status |= setIntegerParam(PVCamMaxShutterCloseDelayRBV, ui16Value);
 
         if (!pl_get_param (detectorHandle, PARAM_SHTR_CLOSE_DELAY, ATTR_CURRENT, (void *) &ui16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SHTR_CLOSE_DELAY, ATTR_CURRENT)");
-        printf ("Current shutter close delay: %d\n", ui16Value);
-        status |= setIntegerParam(addr, PVCamShutterCloseDelay, ui16Value);
-        status |= setIntegerParam(addr, PVCamShutterCloseDelayRBV, ui16Value);
+            reportPvCamError (functionName, "pl_get_param (PARAM_SHTR_CLOSE_DELAY, ATTR_CURRENT)");
+        
+        printf("Current shutter close delay: %d\n", ui16Value);
+        status |= setIntegerParam(PVCamShutterCloseDelay, ui16Value);
+        status |= setIntegerParam(PVCamShutterCloseDelayRBV, ui16Value);
     }
-    else {
+    else
+    {
         ui16Value = (uns16)0;
-        status |= setIntegerParam(addr, PVCamMinShutterCloseDelayRBV, ui16Value);
-        status |= setIntegerParam(addr, PVCamMaxShutterCloseDelayRBV, ui16Value);
-        status |= setIntegerParam(addr, PVCamShutterCloseDelay, ui16Value);
-        status |= setIntegerParam(addr, PVCamShutterCloseDelayRBV, ui16Value);
+        status |= setIntegerParam(PVCamMinShutterCloseDelayRBV, ui16Value);
+        status |= setIntegerParam(PVCamMaxShutterCloseDelayRBV, ui16Value);
+        status |= setIntegerParam(PVCamShutterCloseDelay, ui16Value);
+        status |= setIntegerParam(PVCamShutterCloseDelayRBV, ui16Value);
     }
 
 
     //Full well capacity
     if (!pl_get_param(detectorHandle, PARAM_FWELL_CAPACITY, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_FWELL_CAPACITY, ATTR_AVAIL)");
-    printf ("Full Well Capacity available: %s\n", availStr[paramAvail]);
-    if (paramAvail) {
+        reportPvCamError (functionName, "pl_get_param(PARAM_FWELL_CAPACITY, ATTR_AVAIL)");
+    
+    printf("Full Well Capacity available: %s\n", availStr[paramAvail]);
+    
+    if (paramAvail)
+    {
         if (!pl_get_param (detectorHandle, PARAM_FWELL_CAPACITY, ATTR_MAX, (void *) &ui32Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_FWELL_CAPACITY,  ATTR_MAX)");
-        printf ("Full well capacity: %d\n", (int)ui32Value);
-        status |= setIntegerParam(addr, PVCamFullWellCapacityRBV, ui32Value);
+            reportPvCamError(functionName, "pl_get_param (PARAM_FWELL_CAPACITY,  ATTR_MAX)");
+        
+        printf("Full well capacity: %d\n", (int)ui32Value);
+        status |= setIntegerParam(PVCamFullWellCapacityRBV, ui32Value);
     }
-    else {
+    else
+    {
         ui32Value = (uns32)0;
-        status |= setIntegerParam(addr, PVCamFullWellCapacityRBV, ui32Value);
+        status |= setIntegerParam(PVCamFullWellCapacityRBV, ui32Value);
     }
 
 
     //Number of ports
     if (!pl_get_param (detectorHandle, PARAM_SPDTAB_INDEX, ATTR_MAX, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_SPDTAB_INDEX, ATTR_MAX)");
-    printf ("Total ports: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamNumPortsRBV, ui16Value);
+        reportPvCamError(functionName, "pl_get_param (PARAM_SPDTAB_INDEX, ATTR_MAX)");
+    
+    printf("Total ports: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamNumPortsRBV, ui16Value);
 
 
     //Get transfer capable
     if (!pl_get_param(detectorHandle, PARAM_FRAME_CAPABLE, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_FRAME_CAPABLE, ATTR_AVAIL)");
-    printf ("Frame Capable available: %s\n", availStr[paramAvail]);
-    if (paramAvail) {
+        reportPvCamError(functionName, "pl_get_param(PARAM_FRAME_CAPABLE, ATTR_AVAIL)");
+    
+    printf("Frame Capable available: %s\n", availStr[paramAvail]);
+    
+    if (paramAvail)
+    {
         if (!pl_get_param (detectorHandle, PARAM_FRAME_CAPABLE, ATTR_AVAIL, (void *) &ui16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_FRAME_CAPABLE, ATTR_AVAIL)");
-        printf ("Frame capable: %d\n", ui16Value);
-        status |= setIntegerParam(addr, PVCamFrameTransferCapableRBV, ui16Value);
+            reportPvCamError(functionName, "pl_get_param (PARAM_FRAME_CAPABLE, ATTR_AVAIL)");
+        
+        printf("Frame capable: %d\n", ui16Value);
+        status |= setIntegerParam(PVCamFrameTransferCapableRBV, ui16Value);
     }
-    else {
+    else
+    {
         ui16Value = (uns16)0;
-        status |= setIntegerParam(addr, PVCamFullWellCapacityRBV, ui16Value);
+        status |= setIntegerParam(PVCamFullWellCapacityRBV, ui16Value);
     }
 
     //Get speed table entries
     if (!pl_get_param (detectorHandle, PARAM_SPDTAB_INDEX, ATTR_MAX, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_SPDTAB_INDEX, ATTR_MAX)");
-    printf ("Speed table entries: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamNumSpeedTableEntriesRBV, ui16Value);
+        reportPvCamError(functionName, "pl_get_param (PARAM_SPDTAB_INDEX, ATTR_MAX)");
+    
+    printf("Speed table entries: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamNumSpeedTableEntriesRBV, ui16Value);
 
     if (!pl_get_param (detectorHandle, PARAM_SPDTAB_INDEX, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_SPDTAB_INDEX, ATTR_CURRENT)");
-    printf ("Speed table index: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamSpeedTableIndex, ui16Value);
-    status |= setIntegerParam(addr, PVCamSpeedTableIndexRBV, ui16Value);
+        reportPvCamError(functionName, "pl_get_param (PARAM_SPDTAB_INDEX, ATTR_CURRENT)");
+    
+    printf("Speed table index: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamSpeedTableIndex, ui16Value);
+    status |= setIntegerParam(PVCamSpeedTableIndexRBV, ui16Value);
 
 
     //Get max gain
     if (!pl_get_param (detectorHandle, PARAM_GAIN_INDEX, ATTR_MAX, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_GAIN_INDEX, ATTR_MAX)");
-    printf ("Max gain index: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamMaxGainIndexRBV, ui16Value);
+        reportPvCamError(functionName, "pl_get_param (PARAM_GAIN_INDEX, ATTR_MAX)");
+    
+    printf("Max gain index: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamMaxGainIndexRBV, ui16Value);
 
 
     //Get gain index
     if (!pl_get_param (detectorHandle, PARAM_GAIN_INDEX, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_SPDTAB_INDEX)");
-    printf ("Current gain index: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamGainIndex, ui16Value);
-    status |= setIntegerParam(addr, PVCamGainIndexRBV, ui16Value);
+        reportPvCamError(functionName, "pl_get_param (PARAM_SPDTAB_INDEX)");
+    
+    printf("Current gain index: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamGainIndex, ui16Value);
+    status |= setIntegerParam(PVCamGainIndexRBV, ui16Value);
 
 
     //Get bits
     if (!pl_get_param (detectorHandle, PARAM_BIT_DEPTH, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_BIT_DEPTH, ATTR_CURRENT)");
-    printf ("Bit depth: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamBitDepthRBV, ui16Value);
+        reportPvCamError(functionName, "pl_get_param (PARAM_BIT_DEPTH, ATTR_CURRENT)");
+    
+    printf("Bit depth: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamBitDepthRBV, ui16Value);
 
 
     //Get pixel time
     if (!pl_get_param (detectorHandle, PARAM_PIX_TIME, ATTR_CURRENT, (void *) &ui16Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PIX_TIME, ATTR_CURRENT)");
-    printf ("Pixel time: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamPixelTimeRBV, ui16Value);
+        reportPvCamError(functionName, "pl_get_param (PARAM_PIX_TIME, ATTR_CURRENT)");
+    
+    printf("Pixel time: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamPixelTimeRBV, ui16Value);
 
 
     //temperature
     if (!pl_get_param(detectorHandle, PARAM_TEMP, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_TEMP, ATTR_AVAIL)");
-    printf ("Temperature available: %s\n", availStr[paramAvail]);
-    if (paramAvail) {
+        reportPvCamError(functionName, "pl_get_param(PARAM_TEMP, ATTR_AVAIL)");
+    
+    printf("Temperature available: %s\n", availStr[paramAvail]);
+    
+    if (paramAvail)
+    {
         if (!pl_get_param (detectorHandle, PARAM_TEMP, ATTR_CURRENT, (void *) &i16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_TEMP, ATTR_CURRENT)");
+            reportPvCamError(functionName, "pl_get_param (PARAM_TEMP, ATTR_CURRENT)");
+        
         dValue = (double) i16Value / 100.0;
-        printf ("Measured temperature: %f\n", dValue);
-        status |= setDoubleParam(addr, PVCamMeasuredTemperatureRBV, dValue);
+        printf("Measured temperature: %f\n", dValue);
+        status |= setDoubleParam(PVCamMeasuredTemperatureRBV, dValue);
 
         if (!pl_get_param (detectorHandle, PARAM_TEMP, ATTR_MIN, (void *) &i16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_TEMP, ATTR_CURRENT)");
+            reportPvCamError(functionName, "pl_get_param (PARAM_TEMP, ATTR_CURRENT)");
+        
         dValue = (double) i16Value / 100.0;
-        printf ("Min temperature: %f\n", dValue);
-        status |= setDoubleParam(addr, PVCamMinTemperatureRBV, dValue);
+        printf("Min temperature: %f\n", dValue);
+        status |= setDoubleParam(PVCamMinTemperatureRBV, dValue);
 
         if (!pl_get_param (detectorHandle, PARAM_TEMP, ATTR_MAX, (void *) &i16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_TEMP, ATTR_CURRENT)");
+            reportPvCamError(functionName, "pl_get_param (PARAM_TEMP, ATTR_CURRENT)");
+        
         dValue = (double) i16Value / 100.0;
-        printf ("Max temperature: %f\n", dValue);
-        status |= setDoubleParam(addr, PVCamMaxTemperatureRBV, dValue);
+        printf("Max temperature: %f\n", dValue);
+        status |= setDoubleParam(PVCamMaxTemperatureRBV, dValue);
     }
-    else {
+    else
+    {
         dValue = 0.0;
-        status |= setDoubleParam(addr, PVCamMeasuredTemperatureRBV, dValue);
-        status |= setDoubleParam(addr, PVCamMinTemperatureRBV, dValue);
-        status |= setDoubleParam(addr, PVCamMaxTemperatureRBV, dValue);
+        status |= setDoubleParam(PVCamMeasuredTemperatureRBV, dValue);
+        status |= setDoubleParam(PVCamMinTemperatureRBV, dValue);
+        status |= setDoubleParam(PVCamMaxTemperatureRBV, dValue);
     }
 
     if (!pl_get_param(detectorHandle, PARAM_TEMP_SETPOINT, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_TEMP_SETPOINT, ATTR_AVAIL)");
-    printf ("Temperature Setpoint available: %s\n", availStr[paramAvail]);
-    if (paramAvail) {
+        reportPvCamError(functionName, "pl_get_param(PARAM_TEMP_SETPOINT, ATTR_AVAIL)");
+    
+    printf("Temperature Setpoint available: %s\n", availStr[paramAvail]);
+    
+    if (paramAvail)
+    {
         if (!pl_get_param (detectorHandle, PARAM_TEMP_SETPOINT, ATTR_CURRENT, (void *) &i16Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_TEMP_SETPOINT, ATTR_CURRENT)");
+            reportPvCamError(functionName, "pl_get_param (PARAM_TEMP_SETPOINT, ATTR_CURRENT)");
+        
         dValue = (double) i16Value / 100.0;
-        printf ("Set temperature: %f\n", dValue);
-        status |= setDoubleParam(addr, PVCamSetTemperature, dValue);
-        status |= setDoubleParam(addr, PVCamSetTemperatureRBV, dValue);
+        printf("Set temperature: %f\n", dValue);
+        status |= setDoubleParam(PVCamSetTemperature, dValue);
+        status |= setDoubleParam(PVCamSetTemperatureRBV, dValue);
     }
-    else {
+    else
+    {
         dValue = 0.0;
-        status |= setDoubleParam(addr, PVCamSetTemperature, dValue);
-        status |= setDoubleParam(addr, PVCamSetTemperatureRBV, dValue);
+        status |= setDoubleParam(PVCamSetTemperature, dValue);
+        status |= setDoubleParam(PVCamSetTemperatureRBV, dValue);
     }
 
     //Detector Mode
     if (!pl_get_param (detectorHandle, PARAM_PMODE, ATTR_CURRENT, (void *) &ui32Value))
-        outputErrorMessage (functionName, "pl_get_param (PARAM_PMODE, ATTR_CURRENT)");
-    printf ("Detector Mode: %d\n", ui16Value);
-    status |= setIntegerParam(addr, PVCamDetectorMode, ui32Value);
-    status |= setIntegerParam(addr, PVCamDetectorModeRBV, ui32Value);
+        reportPvCamError(functionName, "pl_get_param (PARAM_PMODE, ATTR_CURRENT)");
+    
+    printf("Detector Mode: %d\n", ui16Value);
+    status |= setIntegerParam(PVCamDetectorMode, ui32Value);
+    status |= setIntegerParam(PVCamDetectorModeRBV, ui32Value);
 
 
 
     /*
     //Trigger Edge
     if (!pl_get_param(detectorHandle, PARAM_EDGE_TRIGGER, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_EDGE_TRIGGER, ATTR_AVAIL)");
+        reportPvCamError (functionName, "pl_get_param(PARAM_EDGE_TRIGGER, ATTR_AVAIL)");
     
     printf ("Trigger avail: %s\n", availStr[paramAvail]);
     if (paramAvail)
     {
         if (!pl_get_param (detectorHandle, PARAM_EDGE_TRIGGER, ATTR_CURRENT, (void *) &ui32Value))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_EDGE_TRIGGER, ATTR_CURRENT)");
+            reportPvCamError (functionName, "pl_get_param (PARAM_EDGE_TRIGGER, ATTR_CURRENT)");
         printf ("Trigger edge: %d\n", ui16Value);
 
-        status |= setIntegerParam(addr, PVCamTriggerEdge, ui32Value);
-        status |= setIntegerParam(addr, PVCamTriggerEdgeRBV, ui32Value);
+        status |= setIntegerParam(PVCamTriggerEdge, ui32Value);
+        status |= setIntegerParam(PVCamTriggerEdgeRBV, ui32Value);
     }
     else
     {
         printf ("Trigger edge status is not available\n");
 
-        status |= setIntegerParam(addr, PVCamTriggerEdge, 0);
-        status |= setIntegerParam(addr, PVCamTriggerEdgeRBV, 0);
+        status |= setIntegerParam(PVCamTriggerEdge, 0);
+        status |= setIntegerParam(PVCamTriggerEdgeRBV, 0);
     }
     */
 
 
     uns16 fwVersion;
     //device firmware version
-    if (PV_OK != pl_get_param(detectorHandle, PARAM_HEAD_SER_NUM_ALPHA, ATTR_CURRENT,
-           (void *)&fwVersion) ) {
-        outputErrorMessage (functionName, "pl_get_param PARAM_HEAD_SER_NUM_ALPHA");
-    }
+    if (PV_OK != pl_get_param(detectorHandle, PARAM_HEAD_SER_NUM_ALPHA, ATTR_CURRENT, (void *)&fwVersion))
+        reportPvCamError(functionName, "pl_get_param PARAM_HEAD_SER_NUM_ALPHA");
+    
     sprintf(cValue, "%d.%d", (fwVersion >> 8) & 0xFF, (fwVersion >> 0) & 0xFF );
     printf("Device Driver Version %s\n", cValue);
-    status |= setStringParam(addr, PVCamDevDrvVersRBV, cValue);
+    status |= setStringParam(PVCamDevDrvVersRBV, cValue);
 
     //PV Cam version
-    if (!pl_pvcam_get_ver(&ui16Value) ) {
-        outputErrorMessage (functionName, "pl_pvcam_get_ver");
-    }
-        sprintf(cValue, "%d.%d.%d", (0xFF00&ui16Value)>>8, (0x00F0&ui16Value)>>4, (0x000F&ui16Value) );
+    if (!pl_pvcam_get_ver(&ui16Value))
+        reportPvCamError(functionName, "pl_pvcam_get_ver");
+
+    sprintf(cValue, "%d.%d.%d", (0xFF00&ui16Value)>>8, (0x00F0&ui16Value)>>4, (0x000F&ui16Value) );
     printf("PVCam Version %s\n", cValue);
-    status |= setStringParam(addr, PVCamPVCamVersRBV, cValue);
+    status |= setStringParam(PVCamPVCamVersRBV, cValue);
 
 
 
     //Camera Firmware revision
     if (!pl_get_param(detectorHandle, PARAM_CAM_FW_VERSION, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_CAM_FW_VERSION, ATTR_AVAIL)");
-    printf ("Camera Firmware version available: %s\n", availStr[paramAvail]);
-    if (paramAvail) {
-        if (!pl_get_param (detectorHandle, PARAM_CAM_FW_VERSION, ATTR_CURRENT, (void *) &ui16Value)) {
-            outputErrorMessage (functionName, "pl_get_param (PARAM_CAM_FW_VERSION, ATTR_CURRENT)");
-        }
+        reportPvCamError(functionName, "pl_get_param(PARAM_CAM_FW_VERSION, ATTR_AVAIL)");
+    
+    printf("Camera Firmware version available: %s\n", availStr[paramAvail]);
+    
+    if (paramAvail)
+    {
+        if (!pl_get_param (detectorHandle, PARAM_CAM_FW_VERSION, ATTR_CURRENT, (void *) &ui16Value))
+            reportPvCamError(functionName, "pl_get_param (PARAM_CAM_FW_VERSION, ATTR_CURRENT)");
+
         sprintf(cValue, "%d.%d", (0xFF00&ui16Value)>>8, (0x00FF&ui16Value) );
     }
-    else {
+    else
         sprintf(cValue, "%s", "unknown");
 
-    }
     printf("Camera Firmware Version %s\n", cValue);
-    status |= setStringParam(addr, PVCamCamFirmwareVersRBV, cValue);
+    status |= setStringParam(PVCamCamFirmwareVersRBV, cValue);
 
     //Head Serial Number
     if (!pl_get_param(detectorHandle, PARAM_HEAD_SER_NUM_ALPHA, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_HEAD_SER_NUM_ALPHA, ATTR_AVAIL)");
-    printf ("Head Serial Number available: %s\n", availStr[paramAvail]);
+        reportPvCamError(functionName, "pl_get_param(PARAM_HEAD_SER_NUM_ALPHA, ATTR_AVAIL)");
+    
+    printf("Head Serial Number available: %s\n", availStr[paramAvail]);
+    
     if (paramAvail)
     {
-        if (!pl_get_param (detectorHandle, PARAM_HEAD_SER_NUM_ALPHA, ATTR_CURRENT, (void *) &cValue)) {
-            outputErrorMessage (functionName, "pl_get_param (PARAM_HEAD_SER_NUM_ALPHA, ATTR_CURRENT)");
-        }
+        if (!pl_get_param (detectorHandle, PARAM_HEAD_SER_NUM_ALPHA, ATTR_CURRENT, (void *) &cValue))
+            reportPvCamError(functionName, "pl_get_param (PARAM_HEAD_SER_NUM_ALPHA, ATTR_CURRENT)");
     }
-    else {
+    else
         sprintf(cValue, "%s", "unknown");
 
-    }
     printf("Head Serial Number %s\n", cValue);
-    status |= setStringParam(addr, PVCamHeadSerialNumRBV, cValue);
+    status |= setStringParam(PVCamHeadSerialNumRBV, cValue);
 
     /*/ Serial Number
     if (!pl_get_param(detectorHandle, PARAM_SERIAL_NUM, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_SERIAL_NUM, ATTR_AVAIL)");
+        reportPvCamError (functionName, "pl_get_param(PARAM_SERIAL_NUM, ATTR_AVAIL)");
     printf ("Serial Number available: %s\n", availStr[paramAvail]);
     if (paramAvail)
     {
         if (!pl_get_param (detectorHandle, PARAM_SERIAL_NUM, ATTR_CURRENT, (void *) &ui16Value)) {
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SERIAL_NUM, ATTR_CURRENT)");
+            reportPvCamError (functionName, "pl_get_param (PARAM_SERIAL_NUM, ATTR_CURRENT)");
         }
         printf("Serial Number %d\n", ui16Value);
 
@@ -1257,31 +1340,32 @@ void ADPvCam::queryCurrentSettings (void)
     */
     // Serial num param doesnt exist in new SDK version
     ui16Value = (uns16) 0;
-    status |= setIntegerParam(addr, PVCamSerialNumRBV, ui16Value);
+    status |= setIntegerParam(PVCamSerialNumRBV, ui16Value);
 
     // PCI FirmwareVersion
     if (!pl_get_param(detectorHandle, PARAM_PCI_FW_VERSION, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_PCI_FW_AVAIL, ATTR_AVAIL)");
-    printf ("PCI Firmware version available: %s\n", availStr[paramAvail]);
+        reportPvCamError(functionName, "pl_get_param(PARAM_PCI_FW_AVAIL, ATTR_AVAIL)");
+
+    printf("PCI Firmware version available: %s\n", availStr[paramAvail]);
+    
     if (paramAvail)
     {
-        if (!pl_get_param (detectorHandle, PARAM_PCI_FW_VERSION, ATTR_CURRENT, (void *) &ui16Value)) {
-            outputErrorMessage (functionName, "pl_get_param (PARAM_PCI_FW_VERSION, ATTR_CURRENT)");
-        }
+        if (!pl_get_param (detectorHandle, PARAM_PCI_FW_VERSION, ATTR_CURRENT, (void *) &ui16Value))
+            reportPvCamError(functionName, "pl_get_param (PARAM_PCI_FW_VERSION, ATTR_CURRENT)");
+
         printf("PARAM_PCI_FW_VERSION %d\n", ui16Value);
     }
-    else {
-        ui16Value = (uns16)0;
+    else
+        ui16Value = (uns16) 0;
 
-    }
-    status |= setIntegerParam(addr, PVCamCamFirmwareVersRBV, ui16Value);
+    status |= setIntegerParam(PVCamCamFirmwareVersRBV, ui16Value);
 
 
 
     /* Call the callbacks to update any changes */
     callParamCallbacks();
 
-    printf ("...all current values retrieved.\n\n\n\n");
+    printf("...all current values retrieved.\n\n\n\n");
 
 }
 
@@ -1289,71 +1373,82 @@ void ADPvCam::queryCurrentSettings (void)
 
 void ADPvCam::initializeDetector (void)
 {
-    const char      *functionName = "ADPvCam::initializeDetector ()";
+    const char *functionName = "initializeDetector";
 
-    int             status = asynSuccess;
+    asynStatus status = asynSuccess;
 
-    rgn_type        roi;
+    rgn_type roi;
     uns32           rawDataSize;
 
-    int32           int16Parm,
-                    int16Parm2;
+    int32 int16Parm,
+          int16Parm2;
 
-    int             binX,
-                    binY,
-                    minX,
-                    minY,
-                    sizeX,
-                    sizeY,
-                    width,
-                    height,
-                    iValue;
+    int binX,
+        binY,
+        minX,
+        minY,
+        sizeX,
+        sizeY,
+        width,
+        height,
+        iValue;
 
-    double          dValue;
-    rs_bool            paramAvail;
+    double dValue;
+    rs_bool paramAvail;
 
-    printf ("Initilizing hardware...\n");
+    printf("Initilizing hardware...\n");
 
     status |= getIntegerParam(PVCamNumSerialPixelsRBV,      &width);
     status |= getIntegerParam(PVCamNumParallelPixelsRBV,      &height);
 
-    printf ("width: %d, height: %d\n", width, height);
+    printf("width: %d, height: %d\n", width, height);
 
 
     //Camera Mode
     status |= getIntegerParam(PVCamDetectorMode, &iValue);
-    printf ("Proposed detector mode: %d\n", iValue);
+    printf("Proposed detector mode: %d\n", iValue);
+    
     if (!pl_set_param(detectorHandle, PARAM_PMODE, (void *) &iValue))
-        outputErrorMessage (functionName, "pl_set_param(PARAM_PMODE)");
+        reportPvCamError(functionName, "pl_set_param(PARAM_PMODE)");
+    
     status |= setIntegerParam(PVCamDetectorModeRBV, iValue);
 
 
     //Get num speed table entries
     status |= getIntegerParam(PVCamSpeedTableIndex, &iValue);
-    printf ("Proposed speed table index: %d\n", iValue);
+    printf("Proposed speed table index: %d\n", iValue);
+    
     if (!pl_set_param (detectorHandle, PARAM_SPDTAB_INDEX, (void *) &iValue))
-        outputErrorMessage (functionName, "pl_set_param (PARAM_SPDTAB_INDEX)");
+        reportPvCamError(functionName, "pl_set_param (PARAM_SPDTAB_INDEX)");
+    
     status |= setIntegerParam(PVCamSpeedTableIndexRBV, iValue);
 
 
     //Gain
     status |= getIntegerParam(PVCamGainIndex, &iValue);
-    printf ("Proposed gain: %d\n", iValue);
+    printf("Proposed gain: %d\n", iValue);
+    
     if (!pl_set_param (detectorHandle, PARAM_GAIN_INDEX, (void *) &iValue))
-        outputErrorMessage (functionName, "pl_set_param(PARAM_GAIN_INDEX)");
+        reportPvCamError(functionName, "pl_set_param(PARAM_GAIN_INDEX)");
+    
     status |= setIntegerParam(PVCamGainIndexRBV, iValue);
 
 
     //Temperature
     if (!pl_get_param(detectorHandle, PARAM_TEMP_SETPOINT, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_TEMP_SETPOINT, ATTR_AVAIL)");
-    printf ("Temperature Setpoint available: %d\n", paramAvail);
-    if (paramAvail) {
+        reportPvCamError(functionName, "pl_get_param(PARAM_TEMP_SETPOINT, ATTR_AVAIL)");
+    
+    printf("Temperature Setpoint available: %d\n", paramAvail);
+    
+    if (paramAvail)
+    {
         status |= getDoubleParam(PVCamSetTemperature, &dValue);
         int16Parm = (int32)(dValue * 100);
-        printf ("Proposed temperature: %f\n", dValue);
+        printf("Proposed temperature: %f\n", dValue);
+        
         if (!pl_set_param (detectorHandle, PARAM_TEMP_SETPOINT, (void *) &int16Parm))
-            outputErrorMessage (functionName, "pl_set_param(PARAM_TEMP_SETPOINT)");
+            reportPvCamError(functionName, "pl_set_param(PARAM_TEMP_SETPOINT)");
+        
         status |= setDoubleParam(PVCamSetTemperatureRBV, dValue);
         tempAvailable = true;
     }
@@ -1361,7 +1456,7 @@ void ADPvCam::initializeDetector (void)
 /*
     //Trigger
     if (!pl_get_param(detectorHandle, PARAM_EDGE_TRIGGER, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_EDGE_TRIGGER, ATTR_AVAIL)");
+        reportPvCamError (functionName, "pl_get_param(PARAM_EDGE_TRIGGER, ATTR_AVAIL)");
     if (paramAvail) {
         //Edge
         status |= getIntegerParam(PVCamTriggerEdge, &iValue);
@@ -1373,49 +1468,57 @@ void ADPvCam::initializeDetector (void)
             int16Parm = EDGE_TRIG_NEG;
 
         if (!pl_set_param (detectorHandle, PARAM_EDGE_TRIGGER, (void *) &int16Parm))
-            outputErrorMessage (functionName, "pl_set_param(PARAM_EDGE_TRIGGER)");
+            reportPvCamError (functionName, "pl_set_param(PARAM_EDGE_TRIGGER)");
 
         status |= setIntegerParam(PVCamTriggerEdge, iValue);
 
         //TTL output logic
 //        int16Parm = detectorParms.proposedTTLLogic;
 //        if (!pl_set_param(camera_handle, PARAM_LOGIC_OUTPUT, (void *) &int16Parm))
-//            outputErrorMessage (functionName, "pl_set_param(PARAM_LOGIC_OUTPUT)");
+//            reportPvCamError (functionName, "pl_set_param(PARAM_LOGIC_OUTPUT)");
     }
 */
 
     //pre/post shutter compensation
     if (!pl_get_param(detectorHandle, PARAM_SHTR_OPEN_DELAY, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_SHTR_OPEN_DELAY, ATTR_AVAIL)");
-    printf ("Open Shutter delay available: %d\n", paramAvail);
+        reportPvCamError(functionName, "pl_get_param(PARAM_SHTR_OPEN_DELAY, ATTR_AVAIL)");
+    printf("Open Shutter delay available: %d\n", paramAvail);
+    
     if (paramAvail)
     {
         status |= getIntegerParam(PVCamShutterOpenDelay, &iValue);
-        printf ("Proposed shutter open delay: %d\n", iValue);
+        printf("Proposed shutter open delay: %d\n", iValue);
+        
         if (!pl_set_param (detectorHandle, PARAM_SHTR_OPEN_DELAY, (void *) &iValue))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY)");
+            reportPvCamError(functionName, "pl_get_param (PARAM_SHTR_OPEN_DELAY)");
+        
         status |= setIntegerParam(PVCamShutterOpenDelayRBV, iValue);
     }
+    
     if (!pl_get_param(detectorHandle, PARAM_SHTR_CLOSE_DELAY, ATTR_AVAIL, (void *) &paramAvail))
-        outputErrorMessage (functionName, "pl_get_param(PARAM_SHTR_CLOSE_DELAY, ATTR_AVAIL)");
-    printf ("Close Shutter delay available: %d\n", paramAvail);
+        reportPvCamError(functionName, "pl_get_param(PARAM_SHTR_CLOSE_DELAY, ATTR_AVAIL)");
+    
+    printf("Close Shutter delay available: %d\n", paramAvail);
+    
     if (paramAvail)
     {
         status |= getIntegerParam(PVCamShutterCloseDelay, &iValue);
-        printf ("Proposed shutter close delay: %d\n", iValue);
+        printf("Proposed shutter close delay: %d\n", iValue);
+        
         if (!pl_set_param (detectorHandle, PARAM_SHTR_CLOSE_DELAY, (void *) &iValue))
-            outputErrorMessage (functionName, "pl_get_param (PARAM_SHTR_CLOSE_DELAY)");
+            reportPvCamError(functionName, "pl_get_param (PARAM_SHTR_CLOSE_DELAY)");
+        
         status |= setIntegerParam(PVCamShutterCloseDelayRBV, iValue);
     }
 
 
     //ROI
-    status |= getIntegerParam(ADBinX,         &binX);
-    status |= getIntegerParam(ADBinY,       &binY);
-    status |= getIntegerParam(ADMinX,       &minX);
-    status |= getIntegerParam(ADMinY,       &minY);
-    status |= getIntegerParam(ADSizeX,      &sizeX);
-    status |= getIntegerParam(ADSizeY,      &sizeY);
+    status |= getIntegerParam(ADBinX, &binX);
+    status |= getIntegerParam(ADBinY, &binY);
+    status |= getIntegerParam(ADMinX, &minX);
+    status |= getIntegerParam(ADMinY, &minY);
+    status |= getIntegerParam(ADSizeX, &sizeX);
+    status |= getIntegerParam(ADSizeY, &sizeY);
 
     roi.sbin = binX;
     roi.s1 = minX;
@@ -1430,47 +1533,48 @@ void ADPvCam::initializeDetector (void)
     int16Parm = (int32) (dValue * 1000);
     status |= getIntegerParam(PVCamTriggerMode, &iValue);
     int16Parm2 = iValue;
-    printf ("binX: %d, binY: %d, minx: %d, miny: %d, sizex: %d, sizey: %d, triggerMode: %d, exposureTime: %d\n",
+    printf("binX: %d, binY: %d, minx: %d, miny: %d, sizex: %d, sizey: %d, triggerMode: %d, exposureTime: %d\n",
              binX, binY, minX, minY, sizeX, sizeY, (int)int16Parm2, (int)int16Parm);
+    
     if (!pl_exp_setup_seq (detectorHandle, 1, 1, &roi, (int16)int16Parm2, int16Parm, &rawDataSize))
-        outputErrorMessage (functionName, "pl_exp_setup_seq");
+        reportPvCamError(functionName, "pl_exp_setup_seq");
+    
     status |= setIntegerParam(PVCamTriggerModeRBV, iValue);
 
     //Register callbacks ???does this really exist???
     //if (!pl_cam_register_callback (detectorHandle, PL_CALLBACK_EOF, OnEndFrameCallback))
-    //    outputErrorMessage (functionName, "pl_cam_register_callback");
+    //    reportPvCamError (functionName, "pl_cam_register_callback");
 
     if (rawData != NULL)
-      free (rawData);
-    rawData = (unsigned short *) malloc (sizeof (unsigned short)*width*height);
+      free(rawData);
+    
+    rawData = (unsigned short *) malloc(sizeof (unsigned short)*width*height);
 
     //Put back the values we actually used
 
     /* Call the callbacks to update any changes */
     callParamCallbacks();
 
-    queryCurrentSettings ();
+    queryCurrentSettings();
 }
 
 //_____________________________________________________________________________________________
 
 int ADPvCam::getAcquireStatus (void)
 {
-const char *functionName = "ADPvCam::getAcquireStatus ()";
-    int16      status;
-    uns32      byteCount;
-    int        collectionStatus;
 
-    collectionStatus = 0;
+    const char *functionName = "getAcquireStatus";
+    int16 status;
+    uns32 byteCount;
+    int collectionStatus = 0;
 
     if (!pl_exp_check_status (detectorHandle, &status, &byteCount))
-        outputErrorMessage (functionName, "pl_exp_check_status");
+        reportPvCamError(functionName, "pl_exp_check_status");
 
     if ((status == READOUT_COMPLETE) || (status == READOUT_NOT_ACTIVE))
         collectionStatus = 1;
 
-
-    return (collectionStatus);
+    return collectionStatus;
 
 }
 
