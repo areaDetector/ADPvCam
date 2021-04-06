@@ -22,11 +22,17 @@ ifeq (linux-x86_64, $(findstring linux-x86_64, $(T_A)))
 
 LIB_INSTALLS_Linux += ../os/linux-x86_64/libpvcam.so
 
-else ifeq (linux-x86, $(findstring linux-x86, $(T_A)))
+else ifeq (linux-x86,  $(T_A))
 
 LIB_INSTALLS_Linux    += ../os/linux-x86/libpvcam.so
 
 else ifeq (WIN32, $(findstring WIN32, $(T_A)))
+
+BIN_INSTALLS_WIN32    += ../os/WIN32/pv_icl32.dll ../os/WIN32/pvcam32.dll
+LIB_INSTALLS_WIN32    += ../os/WIN32/pv_icl32.lib ../os/WIN32/pvcam32.lib
+
+
+else ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
 
 BIN_INSTALLS_WIN32    += ../os/WIN32/pv_icl32.dll ../os/WIN32/pvcam32.dll
 LIB_INSTALLS_WIN32    += ../os/WIN32/pv_icl32.lib ../os/WIN32/pvcam32.lib
