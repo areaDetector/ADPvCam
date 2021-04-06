@@ -675,9 +675,13 @@ asynStatus ADPvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
     callParamCallbacks();
 
     if (status)
-        ERR_ARGS("error, status=%d function=%d, value=%d", status, function, value);
+    {
+        ERR_ARGS("error, status=%d function=%d, value=%f", status, function, value);
+    }
     else
-        LOG_ARGS("function=%d, value=%d", function, value);
+    {
+        LOG_ARGS("function=%d, value=%f", function, value);
+    }
 
     return status;
 }
@@ -688,7 +692,7 @@ asynStatus ADPvCam::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
     const char *functionName = "writeFloat64";
     int function = pasynUser->reason;
-    asynStatus status = asynSuccess;
+    int status = asynSuccess;
 
     /* Set the parameter and readback in the parameter library.  This may be overwritten when we read back the
      * status at the end, but that's OK */
@@ -703,10 +707,15 @@ asynStatus ADPvCam::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 
     /* Do callbacks so higher layers see any changes */
     callParamCallbacks();
+    
     if (status)
+    {
         ERR_ARGS("error, status=%d function=%d, value=%f", status, function, value);
+    }
     else
+    {
         LOG_ARGS("function=%d, value=%f", function, value);
+    }
     
     return (asynStatus) status;
 }
@@ -1375,7 +1384,7 @@ void ADPvCam::initializeDetector (void)
 {
     const char *functionName = "initializeDetector";
 
-    asynStatus status = asynSuccess;
+    int status = asynSuccess;
 
     rgn_type roi;
     uns32           rawDataSize;
@@ -1398,8 +1407,8 @@ void ADPvCam::initializeDetector (void)
 
     printf("Initilizing hardware...\n");
 
-    status |= getIntegerParam(PVCamNumSerialPixelsRBV,      &width);
-    status |= getIntegerParam(PVCamNumParallelPixelsRBV,      &height);
+    status |= getIntegerParam(PVCamNumSerialPixelsRBV, &width);
+    status |= getIntegerParam(PVCamNumParallelPixelsRBV, &height);
 
     printf("width: %d, height: %d\n", width, height);
 
