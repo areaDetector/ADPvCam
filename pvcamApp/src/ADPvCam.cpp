@@ -8,14 +8,14 @@
  *
  */
 
-#include "pvCamSrc.h"
+#include "ADPvCam.h"
 
 //_____________________________________________________________________________________________
 
-extern "C" int pvCamConfig(const char *portName, int maxSizeX, int maxSizeY, int dataType,
+extern "C" int ADPvCamConfig(const char *portName, int maxSizeX, int maxSizeY, int dataType,
                                  int maxBuffers, size_t maxMemory, int priority, int stackSize)
 {
-    new pvCam(portName, maxSizeX, maxSizeY, (NDDataType_t)dataType, maxBuffers, maxMemory, priority, stackSize);
+    new ADPvCam(portName, maxSizeX, maxSizeY, (NDDataType_t)dataType, maxBuffers, maxMemory, priority, stackSize);
     return(asynSuccess);
 }
 
@@ -23,7 +23,7 @@ extern "C" int pvCamConfig(const char *portName, int maxSizeX, int maxSizeY, int
 
 static void pvCamAcquisitionTaskC(void *drvPvt)
 {
-    pvCam *pPvt = (pvCam *)drvPvt;
+    ADPvCam *pPvt = (ADPvCam *)drvPvt;
 
     pPvt->pvCamAcquisitionTask();
 }
@@ -32,7 +32,7 @@ static void pvCamAcquisitionTaskC(void *drvPvt)
 
 static void pvCamMonitorTaskC(void *drvPvt)
 {
-    pvCam *pPvt = (pvCam *)drvPvt;
+    ADPvCam *pPvt = (ADPvCam *)drvPvt;
 
     pPvt->pvCamMonitorTask();
 }
@@ -43,10 +43,10 @@ static void pvCamMonitorTaskC(void *drvPvt)
 //_____________________________________________________________________________________________
 //_____________________________________________________________________________________________
 
-pvCam::pvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t dataType, int maxBuffers, size_t maxMemory, int priority, int stackSize)
+ADPvCam::ADPvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t dataType, int maxBuffers, size_t maxMemory, int priority, int stackSize)
     : ADDriver(portName, 1, NUM_PVCAM_PARAMS, maxBuffers, maxMemory, 0, 0, 0, 1, priority, stackSize), imagesRemaining(0), pRaw(NULL)
 {
-    const char *functionName = "pvCam::pvCam()";
+    const char *functionName = "ADPvCam::pvCam()";
     int status = asynSuccess;
     int addr=0;
     size_t dims[2];
@@ -205,7 +205,7 @@ pvCam::pvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t data
 
 //_____________________________________________________________________________________________
 
-template <typename epicsType> int pvCam::computeArray(int maxSizeX, int maxSizeY)
+template <typename epicsType> int ADPvCam::computeArray(int maxSizeX, int maxSizeY)
 {
 epicsType *pData = (epicsType *)this->pRaw->pData;
 int addr=0;
@@ -224,7 +224,7 @@ int    sizeX, sizeY;
 
 //_____________________________________________________________________________________________
 
-int pvCam::allocateBuffer()
+int ADPvCam::allocateBuffer()
 {
     int status = asynSuccess;
     NDArrayInfo_t arrayInfo;
@@ -243,7 +243,7 @@ int pvCam::allocateBuffer()
 
 //_____________________________________________________________________________________________
 
-int pvCam::computeImage()
+int ADPvCam::computeImage()
 {
     int status = asynSuccess;
     NDDataType_t dataType;
@@ -383,9 +383,9 @@ int pvCam::computeImage()
 //_____________________________________________________________________________________________
 
 /* This thread computes new image data and does the callbacks to send it to higher layers */
-void pvCam::pvCamAcquisitionTask()
+void ADPvCam::pvCamAcquisitionTask()
 {
-    const char *functionName = "pvCam::pvCamAcquisitionTask()";
+    const char *functionName = "ADPvCam::pvCamAcquisitionTask()";
     int status = asynSuccess;
     int dataType;
     int addr=0;
@@ -535,9 +535,9 @@ void pvCam::pvCamAcquisitionTask()
 //_____________________________________________________________________________________________
 
 /* This thread computes new image data and does the callbacks to send it to higher layers */
-void pvCam::pvCamMonitorTask()
+void ADPvCam::pvCamMonitorTask()
 {
-    const char *functionName = "pvCam::pvCamTask()";
+    const char *functionName = "ADPvCam::pvCamTask()";
     int status = asynSuccess;
     int addr=0,
         acquire;
@@ -572,9 +572,9 @@ void pvCam::pvCamMonitorTask()
 
 //_____________________________________________________________________________________________
 
-asynStatus pvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
+asynStatus ADPvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
-    //const char *functionName = "pvCam::writeInt32()";
+    //const char *functionName = "ADPvCam::writeInt32()";
     int function = pasynUser->reason;
     int adstatus;
     int addr=0;
@@ -654,9 +654,9 @@ asynStatus pvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
 //_____________________________________________________________________________________________
 
-asynStatus pvCam::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
+asynStatus ADPvCam::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
-    //const char *functionName = "pvCam::writeFloat64()";
+    //const char *functionName = "ADPvCam::writeFloat64()";
     int function = pasynUser->reason;
     int status = 0;
     int addr=0;
@@ -687,7 +687,7 @@ asynStatus pvCam::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 
 //_____________________________________________________________________________________________
 
-void pvCam::report(FILE *fp, int details)
+void ADPvCam::report(FILE *fp, int details)
 {
     int addr=0;
 
@@ -706,9 +706,9 @@ void pvCam::report(FILE *fp, int details)
 
 //_____________________________________________________________________________________________
 
-pvCam::~pvCam()
+ADPvCam::~ADPvCam()
 {
-const char         *functionName = "pvCam::~pvCam ()";
+const char         *functionName = "~ADPvCam";
 
     if (rawData != NULL)
         free (rawData);
@@ -731,7 +731,7 @@ const char         *functionName = "pvCam::~pvCam ()";
 //_____________________________________________________________________________________________
 
 
-void pvCam::outputErrorMessage (const char *functionName, const char *appMessage)
+void ADPvCam::outputErrorMessage (const char *functionName, const char *appMessage)
 {
 int16    errorCode;
 char    errorMessage[256];
@@ -743,9 +743,9 @@ char    errorMessage[256];
 
 //_____________________________________________________________________________________________
 
-void pvCam::initializeDetectorInterface (void)
+void ADPvCam::initializeDetectorInterface (void)
 {
-const char      *functionName   = "pvCam::initializeDetectorInterface ()";
+const char      *functionName   = "ADPvCam::initializeDetectorInterface ()";
 int             status          =    asynSuccess;
 int             addr            =    0;
 
@@ -806,9 +806,9 @@ int             addr            =    0;
 
 //_____________________________________________________________________________________________
 
-void pvCam::selectDetector (int selectedDetector)
+void ADPvCam::selectDetector (int selectedDetector)
 {
-    const char *functionName = "pvCam::selectDetector (int selectedDetector)";
+    const char *functionName = "ADPvCam::selectDetector (int selectedDetector)";
     int status = asynSuccess;
     int addr = 0;
 
@@ -847,9 +847,9 @@ void pvCam::selectDetector (int selectedDetector)
 
 //_____________________________________________________________________________________________
 
-void pvCam::queryCurrentSettings (void)
+void ADPvCam::queryCurrentSettings (void)
 {
-    const char      *functionName   = "pvCam::queryCurrentSettings ()";
+    const char      *functionName   = "ADPvCam::queryCurrentSettings ()";
     int             status          =  asynSuccess;
     int             addr            =  0;
     uns16           ui16Value;
@@ -1287,9 +1287,9 @@ void pvCam::queryCurrentSettings (void)
 
 //_____________________________________________________________________________________________
 
-void pvCam::initializeDetector (void)
+void ADPvCam::initializeDetector (void)
 {
-    const char      *functionName = "pvCam::initializeDetector ()";
+    const char      *functionName = "ADPvCam::initializeDetector ()";
 
     int             status = asynSuccess;
 
@@ -1454,9 +1454,9 @@ void pvCam::initializeDetector (void)
 
 //_____________________________________________________________________________________________
 
-int pvCam::getAcquireStatus (void)
+int ADPvCam::getAcquireStatus (void)
 {
-const char *functionName = "pvCam::getAcquireStatus ()";
+const char *functionName = "ADPvCam::getAcquireStatus ()";
     int16      status;
     uns32      byteCount;
     int        collectionStatus;
@@ -1475,4 +1475,45 @@ const char *functionName = "pvCam::getAcquireStatus ()";
 }
 
 //_____________________________________________________________________________________________
+
+
+
+/* Code for iocsh registration */
+
+/* pvCamConfig */
+static const iocshArg ADPvCamConfigArg0 = {"Port name", iocshArgString};
+static const iocshArg ADPvCamConfigArg1 = {"Max X size", iocshArgInt};
+static const iocshArg ADPvCamConfigArg2 = {"Max Y size", iocshArgInt};
+static const iocshArg ADPvCamConfigArg3 = {"Data type", iocshArgInt};
+static const iocshArg ADPvCamConfigArg4 = {"maxBuffers", iocshArgInt};
+static const iocshArg ADPvCamConfigArg5 = {"maxMemory", iocshArgInt};
+static const iocshArg ADPvCamConfigArg6 = {"priority", iocshArgInt};
+static const iocshArg ADPvCamConfigArg7 = {"stackSize", iocshArgInt};
+static const iocshArg * const ADPvCamConfigArgs[] =  {&ADPvCamConfigArg0,
+                                                          &ADPvCamConfigArg1,
+                                                          &ADPvCamConfigArg2,
+                                                          &ADPvCamConfigArg3,
+                                                          &ADPvCamConfigArg4,
+                                                          &ADPvCamConfigArg5,
+                                                          &ADPvCamConfigArg6,
+                                                          &ADPvCamConfigArg7};
+
+
+static const iocshFuncDef configPVCam = {"ADPvCamConfig", 8, ADPvCamConfigArgs};
+
+static void configPVCamCallFunc(const iocshArgBuf *args)
+{
+    ADPvCamConfig(args[0].sval, args[1].ival, args[2].ival, args[3].ival,
+                      args[4].ival, args[5].ival, args[6].ival, args[7].ival);
+}
+
+
+static void pvCamRegister(void)
+{
+    iocshRegister(&configPVCam, configPVCamCallFunc);
+}
+
+extern "C" {
+    epicsExportRegistrar(pvCamRegister);
+}
 

@@ -3,7 +3,7 @@ include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
-LIBRARY_NAME = pvCam 
+LIBRARY_NAME = ADPvCam 
 
 # Only build for 32bit versions of Windows and Linux.
 # Cygwin no longer recognizes the .lib files.
@@ -26,8 +26,7 @@ LIBRARY_IOC = $(LIBRARY_NAME)
 endif
 
 #Include driver code
-LIB_SRCS += pvCam.cpp
-LIB_SRCS += drvPVCamEpics.c
+LIB_SRCS += ADPvCam.cpp
 
 #Add required libraries
 ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
