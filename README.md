@@ -14,5 +14,5 @@ The driver is based on the
 from Photometrics, and runs on Microsoft Windows and Linux. 
 
 Additional information:
-* [Documentation](https://cars.uchicago.edu/software/epics/pvcamDoc.html).
+* [Documentation](https://areaDetector.github.io/areaDetector/ADPvCam/pvcamDoc.html).
 * [Release notes and links to source and binary releases](RELEASE.md).
