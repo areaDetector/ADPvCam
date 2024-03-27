@@ -8,7 +8,8 @@ ifeq ($(STATIC_BUILD), YES)
 endif
 PROD_NAME    = pvCamApp
 
-PROD_IOC += $(PROD_NAME)
+PROD_IOC_Linux += $(PROD_NAME)
+PROD_IOC_WIN32 += $(PROD_NAME)
 
 
 # <name>.dbd will be created from <name>Include.dbd
@@ -24,24 +25,10 @@ $(PROD_NAME)_SRCS += $(PROD_NAME)_registerRecordDeviceDriver.cpp $(PROD_NAME)Mai
 $(PROD_NAME)_LIBS += ADPvCam
 
 # 64 bit windows support
-ifeq (windows-x64, $(findstring windows-x64, $(T_A)))
-$(PROD_NAME)_LIBS += pvcam
-
-else ifeq (win32-x86, $(findstring win32-x86, $(T_A)))
-$(PROD_NAME)_LIBS += pvcam32 pv_icl32
-
-else ifeq (cygwin-x86, $(findstring cygwin-x86, $(T_A)))
-$(PROD_NAME)_LIBS += pvcam32 pv_icl32
-
+$(PROD_NAME)_LIBS_WIN32 += pvcam
 
 # For linux we only have a shared library, so use SYS_LIBS
-else ifeq (linux-x86, $(T_A))
-$(PROD_NAME)_SYS_LIBS += pvcam
-
-else ifeq (linux-x86_64, $(findstring linux-x86_64, $(T_A)))
-$(PROD_NAME)_SYS_LIBS += pvcam
-
-endif
+$(PROD_NAME)_SYS_LIBS_LINUX += pvcam
 
 include $(ADCORE)/ADApp/commonDriverMakefile
 
