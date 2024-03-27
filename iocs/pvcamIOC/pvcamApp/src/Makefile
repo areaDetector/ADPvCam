@@ -28,7 +28,7 @@ $(PROD_NAME)_LIBS += ADPvCam
 $(PROD_NAME)_LIBS_WIN32 += pvcam
 
 # For linux we only have a shared library, so use SYS_LIBS
-$(PROD_NAME)_SYS_LIBS_LINUX += pvcam
+$(PROD_NAME)_SYS_LIBS_Linux += pvcam
 
 include $(ADCORE)/ADApp/commonDriverMakefile
 
