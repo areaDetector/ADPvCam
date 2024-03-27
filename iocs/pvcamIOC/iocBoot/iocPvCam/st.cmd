@@ -2,7 +2,7 @@ errlogInit(20000)
 
 < envPaths
 
-dbLoadDatabase("$(TOP)/dbd/pvCamApp.dbd"
+dbLoadDatabase("$(TOP)/dbd/pvCamApp.dbd")
 pvCamApp_registerRecordDeviceDriver(pdbbase)
 
 # Prefix for all records
@@ -34,7 +34,7 @@ epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 #    6 = NDFloat32
 #    7 = NDFloat64
 #
-pvCamConfig("$(PORT)", $(XSIZE), $(YSIZE), 3, 0, 0)
+ADPvCamConfig("$(PORT)", $(XSIZE), $(YSIZE), 3, 0, 0)
 dbLoadRecords("$(ADPVCAM)/db/pvCam.template", "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 
 # Create a standard arrays plugin, set it to get data from pvCamera driver.

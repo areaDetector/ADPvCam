@@ -11,6 +11,12 @@
 #ifndef PVCAMSRC_H
 #define PVCAMSRC_H
 
+// version numbers
+#define ADPVCAM_VERSION      2
+#define ADPVCAM_REVISION     2
+#define ADPVCAM_MODIFICATION 0
+
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -27,10 +33,12 @@
 #include <epicsStdio.h>
 #include <epicsMutex.h>
 #include <cantProceed.h>
+#include <epicsExit.h>
+#include <iocsh.h>
+#include <epicsExport.h>
 
 #include "ADDriver.h"
 
-#include "drvPVCam.h"
 
 /* PM FILES */
 #include "master.h"
@@ -38,7 +46,7 @@
 
 //______________________________________________________________________________________________
 
-static const char *driverName = "drvPVCam";
+static const char *driverName = "ADPvCam";
 
 //______________________________________________________________________________________________
 
@@ -111,7 +119,7 @@ static const char *driverName = "drvPVCam";
 
 /** Driver for Roper (Photometrics and Princeton Instruments) cameras using the PvCam library.
   */
-class pvCam : public ADDriver
+class ADPvCam : public ADDriver
 {
 public:
 int                 imagesRemaining;
@@ -119,7 +127,7 @@ epicsEventId         startEventId,
                     stopEventId;
 NDArray             *pRaw;
 
-    pvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t dataType,
+    ADPvCam(const char *portName, int maxSizeX, int maxSizeY, NDDataType_t dataType,
                 int maxBuffers, size_t maxMemory, int priority, int stackSize);
 
     /* These are the methods that we override from ADDriver */
@@ -130,13 +138,17 @@ NDArray             *pRaw;
     /* These are the methods that are new to this class */
     template <typename epicsType> int computeArray(int maxSizeX, int maxSizeY);
 
+
+    // Helper function that checks if 
+    //asynStatus getCameraParam(int16 detectorHandle, uns32 paramID, int16 paramAttr, void* paramVal);
+
     int allocateBuffer();
     int computeImage();
 
     void pvCamAcquisitionTask();
     void pvCamMonitorTask();
 
-    ~pvCam ();
+    ~ADPvCam ();
 
 protected:
     int PVCamInitDetector;
@@ -205,7 +217,7 @@ char            *detectorList[5];
 
 unsigned short  *rawData;
 
-    void outputErrorMessage (const char *functionName, const char *appMessage);
+    void reportPvCamError (const char *functionName, const char *appMessage);
 
     void initializeDetectorInterface (void);
     void selectDetector (int selectedDetector);
