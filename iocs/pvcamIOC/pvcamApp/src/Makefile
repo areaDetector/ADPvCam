@@ -25,7 +25,7 @@ $(PROD_NAME)_SRCS += $(PROD_NAME)_registerRecordDeviceDriver.cpp $(PROD_NAME)Mai
 $(PROD_NAME)_LIBS += ADPvCam
 
 # 64 bit windows support
-$(PROD_NAME)_LIBS_WIN32 += pvcam
+$(PROD_NAME)_LIBS_WIN32 += pvcam64
 
 # For linux we only have a shared library, so use SYS_LIBS
 $(PROD_NAME)_SYS_LIBS_Linux += pvcam
