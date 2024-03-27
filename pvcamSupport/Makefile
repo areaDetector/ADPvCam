@@ -8,14 +8,9 @@ include $(TOP)/configure/CONFIG
 # used by PVCam driver
 
 INC += pvcam.h master.h #pv_icl.h
-#INC_linux-x86 += master.h
-#INC_linux-x86_64 += master.h
-#INC_WIN32 += master.h
-#INC_cygwin32 += master.h
 
 # Note, the following files were manually copied from the PVCam distribution
 # to this directory after building
-
 
 
 ifeq (linux-x86_64, $(findstring linux-x86_64, $(T_A)))
