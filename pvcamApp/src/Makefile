@@ -15,7 +15,7 @@ LIBRARY_IOC_Linux = $(LIBRARY_NAME)
 LIB_SRCS += ADPvCam.cpp
 
 #Add required libraries
-LIB_LIBS_WIN32 += pvcam32 pv_icl32
+LIB_LIBS_WIN32 += pvcam64
 LIB_LIBS_LINUX += pvcam
 
 DBD += pvCamSupport.dbd
