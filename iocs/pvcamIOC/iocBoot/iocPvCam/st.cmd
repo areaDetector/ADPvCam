@@ -39,7 +39,7 @@ dbLoadRecords("$(ADPVCAM)/db/pvCam.template", "P=$(PREFIX),R=cam1:,PORT=$(PORT),
 
 # Create a standard arrays plugin, set it to get data from pvCamera driver.
 NDStdArraysConfigure("Image1", 1, 0, "$(PORT)", 0, 10000000)
-dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),TYPE=Int16,FTVL=SHORT,NELEMENTS=4194304")
+dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=Image1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),TYPE=Int16,FTVL=SHORT,NELEMENTS=4194304")
 
 # Load all other plugins using commonPlugins.cmd
 < $(ADCORE)/iocBoot/commonPlugins.cmd
