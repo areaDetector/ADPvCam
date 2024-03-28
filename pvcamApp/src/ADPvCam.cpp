@@ -369,6 +369,12 @@ int ADPvCam::computeImage()
         case NDUInt32:
             status |= computeArray<epicsUInt32>(maxSizeX, maxSizeY);
             break;
+        case NDInt64:
+            status |= computeArray<epicsInt64>(maxSizeX, maxSizeY);
+            break;
+        case NDUInt64:
+            status |= computeArray<epicsUInt64>(maxSizeX, maxSizeY);
+            break;
         case NDFloat32:
             status |= computeArray<epicsFloat32>(maxSizeX, maxSizeY);
             break;
@@ -409,9 +415,9 @@ int ADPvCam::computeImage()
     pImage->getInfo(&arrayInfo);
     
     status = asynSuccess;
-    status |= setIntegerParam(NDArraySize,  arrayInfo.totalBytes);
-    status |= setIntegerParam(NDArraySizeX, pImage->dims[0].size);
-    status |= setIntegerParam(NDArraySizeY, pImage->dims[1].size);
+    status |= setIntegerParam(NDArraySize,  (int)arrayInfo.totalBytes);
+    status |= setIntegerParam(NDArraySizeX, (int)pImage->dims[0].size);
+    status |= setIntegerParam(NDArraySizeY, (int)pImage->dims[1].size);
 
     if (status) ERR("error setting parameters");
     return status;
@@ -676,11 +682,11 @@ asynStatus ADPvCam::writeInt32(asynUser *pasynUser, epicsInt32 value)
 
     if (status)
     {
-        ERR_ARGS("error, status=%d function=%d, value=%f", status, function, value);
+        ERR_ARGS("error, status=%d function=%d, value=%d", status, function, value);
     }
     else
     {
-        LOG_ARGS("function=%d, value=%f", function, value);
+        LOG_ARGS("function=%d, value=%d", function, value);
     }
 
     return status;
@@ -725,7 +731,7 @@ asynStatus ADPvCam::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 void ADPvCam::report(FILE *fp, int details)
 {
 
-    const char* functionName = "report";
+    //const char* functionName = "report";
 
     fprintf(fp, "PVCam %s\n", this->portName);
     if (details > 0)
@@ -889,7 +895,6 @@ void ADPvCam::queryCurrentSettings (void)
 {
     const char *functionName = "queryCurrentSettings";
     int status = asynSuccess;
-    int addr = 0;
     uns16 ui16Value;
     uns32 ui32Value;
     int16 i16Value,
@@ -1367,7 +1372,7 @@ void ADPvCam::queryCurrentSettings (void)
     else
         ui16Value = (uns16) 0;
 
-    status |= setIntegerParam(PVCamCamFirmwareVersRBV, ui16Value);
+    status |= setIntegerParam(PVCamPCIFWVersRBV, ui16Value);
 
 
 
