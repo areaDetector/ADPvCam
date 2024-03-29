@@ -7,7 +7,7 @@ include $(TOP)/configure/CONFIG
 # The files in this directory are installed first because they are
 # used by PVCam driver
 
-INC += pvcam.h master.h #pv_icl.h
+INC += pvcam.h master.h
 
 # Note, the following files were manually copied from the PVCam distribution
 # to this directory after building
