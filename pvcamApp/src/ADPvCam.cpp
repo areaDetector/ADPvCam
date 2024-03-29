@@ -903,7 +903,8 @@ void ADPvCam::queryCurrentSettings (void)
           serialSize,
           pixelSerialSize;
     double dValue;
-    char cValue[CCD_NAME_LEN];
+    // Big enough for any strings we are fetching
+    char cValue[256];
     rs_bool paramAvail;
     const char *availStr[] = {"NO", "YES"};
 
@@ -913,27 +914,27 @@ void ADPvCam::queryCurrentSettings (void)
     status |= setIntegerParam(PVCamInitDetector, 0);
 
     //Query open camera parameters
-    if (!pl_get_param (detectorHandle, PARAM_CHIP_NAME, ATTR_COUNT, (void *) &ui32Value))
-        reportPvCamError (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_COUNT)");
-    else
-    {
-        if ( ui32Value <= CCD_NAME_LEN )
-        {
-            if (!pl_get_param (detectorHandle, PARAM_CHIP_NAME, ATTR_CURRENT, (void *) cValue))
-                reportPvCamError (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_CURRENT)");
+    
+    //Chip name
+    if (!pl_get_param (detectorHandle, PARAM_CHIP_NAME, ATTR_CURRENT, (void *) cValue))
+        reportPvCamError (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_CURRENT)");
         
-            printf("Chip name: %s\n", cValue);
-            status |= setStringParam(PVCamChipNameRBV, cValue);
-        }
-        else
-        {
-            sprintf(cValue, "%s", "unknown");
-            status |= setStringParam(PVCamChipNameRBV, cValue);
-            reportPvCamError (functionName, "pl_get_param (PARAM_CHIP_NAME, ATTR_CURRENT)\n");
-            reportPvCamError (functionName, "Name is too long for storage allotted\n");
-            printf("PARAM_CHIP_NAME ATTR_COUNT = %d, CCD_NAME_LEN = %d\n", (int)ui32Value, CCD_NAME_LEN);
-        }
+    printf("Chip name: %s\n", cValue);
+    status |= setStringParam(PVCamChipNameRBV, cValue);
+
+    //Product name
+    if (!pl_get_param(detectorHandle, PARAM_PRODUCT_NAME, ATTR_AVAIL, (void *) &paramAvail))
+        reportPvCamError(functionName, "pl_get_param(PARAM_PRODUCT_NAME, ATTR_AVAIL)");
+    printf("Product name available: %s\n", availStr[paramAvail]);    
+    if (paramAvail)
+    {
+        if (!pl_get_param (detectorHandle, PARAM_PRODUCT_NAME, ATTR_CURRENT, (void *) &cValue))
+            reportPvCamError(functionName, "pl_get_param (PARAM_CAM_FW_VERSION, ATTR_CURRENT)");
     }
+    else
+        sprintf(cValue, "%s", "unknown");
+    printf("Product name %s\n", cValue);
+    status |= setStringParam(ADModel, cValue);
 
     //Num pixels
     if (!pl_get_param (detectorHandle, PARAM_PAR_SIZE, ATTR_CURRENT, (void *) &ui16Value))
@@ -941,6 +942,7 @@ void ADPvCam::queryCurrentSettings (void)
     
     printf("Parallel size: %d\n", ui16Value);
     status |= setIntegerParam(PVCamNumParallelPixelsRBV, ui16Value);
+    status |= setIntegerParam(ADMaxSizeY, ui16Value);
     parallelSize = ui16Value;
 
     if (!pl_get_param (detectorHandle, PARAM_SER_SIZE, ATTR_CURRENT, (void *) &ui16Value))
@@ -948,6 +950,7 @@ void ADPvCam::queryCurrentSettings (void)
     
     printf("Serial size: %d\n", ui16Value);
     status |= setIntegerParam(PVCamNumSerialPixelsRBV, ui16Value);
+    status |= setIntegerParam(ADMaxSizeX, ui16Value);
     serialSize = ui16Value;
 
 
@@ -1296,6 +1299,7 @@ void ADPvCam::queryCurrentSettings (void)
     sprintf(cValue, "%d.%d.%d", (0xFF00&ui16Value)>>8, (0x00F0&ui16Value)>>4, (0x000F&ui16Value) );
     printf("PVCam Version %s\n", cValue);
     status |= setStringParam(PVCamPVCamVersRBV, cValue);
+    status |= setStringParam(ADSDKVersion, cValue);
 
 
 
@@ -1317,6 +1321,7 @@ void ADPvCam::queryCurrentSettings (void)
 
     printf("Camera Firmware Version %s\n", cValue);
     status |= setStringParam(PVCamCamFirmwareVersRBV, cValue);
+    status |= setStringParam(ADFirmwareVersion, cValue);
 
     //Head Serial Number
     if (!pl_get_param(detectorHandle, PARAM_HEAD_SER_NUM_ALPHA, ATTR_AVAIL, (void *) &paramAvail))
@@ -1334,6 +1339,7 @@ void ADPvCam::queryCurrentSettings (void)
 
     printf("Head Serial Number %s\n", cValue);
     status |= setStringParam(PVCamHeadSerialNumRBV, cValue);
+    status |= setStringParam(ADSerialNumber, cValue);
 
     /*/ Serial Number
     if (!pl_get_param(detectorHandle, PARAM_SERIAL_NUM, ATTR_AVAIL, (void *) &paramAvail))
