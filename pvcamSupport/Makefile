@@ -13,6 +13,9 @@ INC += pvcam.h master.h
 # to this directory after building
 
 LIB_INSTALLS_Linux += ../os/linux-x86_64/libpvcam.so
+LIB_INSTALLS_Linux += ../os/linux-x86_64/libpvcam.so.2
+LIB_INSTALLS_Linux += ../os/linux-x86_64/libpvcam.so.2.5
+
 LIB_INSTALLS_WIN32 += ../os/WIN32/pvcam64.lib
 
 #=============================
